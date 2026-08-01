@@ -4,8 +4,8 @@
 // Proprietary and confidential. Unauthorized reproduction prohibited.
 // ═══════════════════════════════════════════════════════════════════
 
-const WORKER_URL        = "https://eta-admin-dashboard.maikle1121.workers.dev";
-const SUPABASE_KEY      = "sb_publishable_xQcMrCMwwggfAKggkxfYxQ_Ty0DbgRK";
+const SUPABASE_URL    = "https://qtjgrzqyzdjnkzjhlnaa.supabase.co";
+const SUPABASE_KEY    = "sb_publishable_xQcMrCMwwggfAKggkxfYxQ_Ty0DbgRK";
 const SB_HEADERS = {
     "apikey": SUPABASE_KEY,
     "Authorization": "Bearer " + SUPABASE_KEY,
@@ -13,11 +13,8 @@ const SB_HEADERS = {
 };
 const STORAGE_KEY     = "eta_auth_token";
 const ADMIN_PW_KEY    = "eta_admin_pw";
-const LOCAL_SERVER    = "https://eta-dashboard-final.pages.dev"; // Cloudflare Pages API
-const OFFICIAL_EXTENSION_ID = "ejcokmliongdpbcglegfnfmodibdpcna";
-const ETA_API_SECRET = "ETA-MYA-2024-PROTECTED-" + "ETA".split("").reverse().join("") + "7d3f";
 
-let activeBackend = "local"; // GitHub Pages: talk to the Cloudflare Pages API
+let activeBackend = "supabase"; // GitHub Pages: talk directly to Supabase
 let adminPassword  = null;
 
 // ─── HELPERS ────────────────────────────────────────────────
@@ -59,7 +56,7 @@ async function hashPassword(password) {
 // ─── SUPABASE ADAPTER ──────────────────────────────────────────
 
 async function sbGet(path) {
-    const res = await fetch(`${WORKER_URL}${path}`, { headers: { ...SB_HEADERS, "Prefer": "return=representation" } });
+    const res = await fetch(`${SUPABASE_URL}${path}`, { headers: { ...SB_HEADERS, "Prefer": "return=representation" } });
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         if (res.status === 401) throw new Error("Unauthorized");
@@ -69,7 +66,7 @@ async function sbGet(path) {
 }
 
 async function sbPost(path, body) {
-    const res = await fetch(`${WORKER_URL}${path}`, {
+    const res = await fetch(`${SUPABASE_URL}${path}`, {
         method: "POST",
         headers: { ...SB_HEADERS, "Prefer": "return=representation" },
         body: JSON.stringify(body)
@@ -83,7 +80,7 @@ async function sbPost(path, body) {
 }
 
 async function sbPatch(path, body) {
-    const res = await fetch(`${WORKER_URL}${path}`, {
+    const res = await fetch(`${SUPABASE_URL}${path}`, {
         method: "PATCH",
         headers: { ...SB_HEADERS, "Prefer": "return=representation" },
         body: JSON.stringify(body)
@@ -97,7 +94,7 @@ async function sbPatch(path, body) {
 }
 
 async function sbDelete(path) {
-    const res = await fetch(`${WORKER_URL}${path}`, {
+    const res = await fetch(`${SUPABASE_URL}${path}`, {
         method: "DELETE",
         headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY }
     });
@@ -107,6 +104,20 @@ async function sbDelete(path) {
         throw new Error(err.error || `Supabase error: ${res.status}`);
     }
     return true;
+}
+
+async function sbRpc(fn, params = {}) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+        method: "POST",
+        headers: { ...SB_HEADERS },
+        body: JSON.stringify(params)
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (res.status === 401) throw new Error("Unauthorized");
+        throw new Error(err.error || `RPC ${fn} error: ${res.status}`);
+    }
+    return await res.json();
 }
 
 function parseUrlPath(url) {
@@ -128,42 +139,15 @@ async function apiFetch(url, options = {}) {
     const token = getAuthToken();
     const path = parseUrlPath(url);
 
-    if (activeBackend === "supabase") {
-        return await supabaseApiCall(path, method, body, url, token);
-    }
-    if (activeBackend === "local") {
-        return await localApiCall(url, options, token);
-    }
-
-    try {
-        const result = await supabaseApiCall(path, method, body, url, token);
-        activeBackend = "supabase";
-        return result;
-    } catch (sbErr) {
-        console.log("Dashboard: Supabase failed, trying localhost:", sbErr.message);
-        try {
-            const result = await localApiCall(url, options, token);
-            activeBackend = "local";
-            return result;
-        } catch (localErr) {
-            if (sbErr.message === "Unauthorized" || localErr.message === "Unauthorized") {
-                setAuthToken(null);
-                showLogin();
-                showToast("انتهت الجلسة، يرجى تسجيل الدخول مرة أخرى", "err");
-                throw new Error("Unauthorized");
-            }
-            throw sbErr;
-        }
-    }
+    return await supabaseApiCall(path, method, body, url, token);
 }
 
 async function supabaseApiCall(path, method, body, fullUrl, token) {
     const adminPw = getAdminPassword();
 
     if (path === "/api/login" && method === "POST") {
-        const rows = await sbGet("/rest/v1/settings?id=eq.1&select=admin_password");
-        const hashedInput = await hashPassword(body.password);
-        if (rows && rows.length > 0 && hashedInput === rows[0].admin_password) {
+        const data = await sbRpc("admin_login", { p_password: body.password });
+        if (data && data.ok) {
             return { success: true, token: body.password };
         }
         throw new Error("كلمة المرور خاطئة");
@@ -222,55 +206,52 @@ async function supabaseApiCall(path, method, body, fullUrl, token) {
             const sub = body;
             if (!sub || !sub.email) throw new Error("بيانات المشترك غير كاملة");
             const linkedEmails = Array.isArray(sub.linkedEmails) ? sub.linkedEmails : [];
-            await sbPost("/rest/v1/subscribers?on_conflict=email", {
-                email: sub.email.toLowerCase().trim(),
-                name: sub.name || "",
-                start_date: sub.startDate || "",
-                end_date: sub.endDate || "unlimited",
-                status: sub.status || "active",
-                linked_emails: linkedEmails,
-                notes: sub.notes || ""
+            const data = await sbRpc("admin_upsert_subscriber", {
+                p_email: sub.email.toLowerCase().trim(),
+                p_name: sub.name || "",
+                p_start_date: sub.startDate || "",
+                p_end_date: sub.endDate || "unlimited",
+                p_status: sub.status || "active",
+                p_linked_emails: linkedEmails,
+                p_notes: sub.notes || "",
+                p_password: adminPw
             });
-            await sbPost("/rest/v1/rpc/increment_subscribers_version", {});
+            if (!data.ok) throw new Error(data.error || "خطأ أثناء حفظ البيانات");
             return { success: true };
         }
         if (path === "/api/settings/config") {
-            const update = {};
-            if (body.maintenanceMode !== undefined) update.maintenance_mode = !!body.maintenanceMode;
-            if (body.noticeMessage !== undefined) update.notice_message = body.noticeMessage;
-            if (body.version !== undefined) update.version = body.version;
-            if (body.versionNotes !== undefined) update.version_notes = body.versionNotes;
-            await sbPatch("/rest/v1/settings?id=eq.1", update);
+            const update = { p_password: adminPw };
+            if (body.maintenanceMode !== undefined) update.p_maintenance_mode = !!body.maintenanceMode;
+            if (body.noticeMessage !== undefined) update.p_notice_message = body.noticeMessage;
+            if (body.version !== undefined) update.p_version = body.version;
+            if (body.versionNotes !== undefined) update.p_version_notes = body.versionNotes;
+            const data = await sbRpc("admin_update_settings", update);
+            if (!data.ok) throw new Error(data.error || "خطأ أثناء حفظ الإعدادات");
             return { success: true };
         }
         if (path === "/api/settings/mode") {
             if (body.mode !== "free" && body.mode !== "paid") throw new Error("Invalid mode");
-            await sbPatch("/rest/v1/settings?id=eq.1", { mode: body.mode });
+            const data = await sbRpc("admin_update_settings", { p_mode: body.mode, p_password: adminPw });
+            if (!data.ok) throw new Error(data.error || "خطأ أثناء تحديث الوضع");
             return { success: true, mode: body.mode };
         }
         if (path === "/api/settings/change-password") {
             if (!body.newPassword || body.newPassword.length < 4) throw new Error("كلمة المرور يجب أن تكون 4 أحرف على الأقل");
-            await sbPatch("/rest/v1/settings?id=eq.1", { admin_password: body.newPassword });
+            const data = await sbRpc("admin_change_password", {
+                p_new_password: body.newPassword,
+                p_password: adminPw
+            });
+            if (!data.ok) throw new Error(data.error || "خطأ أثناء تغيير كلمة المرور");
             return { success: true };
         }
         if (path === "/api/settings/import") {
             if (!Array.isArray(body.subscribers)) throw new Error("Data must be array");
-            await sbDelete("/rest/v1/subscribers?id=gt.0");
-            for (const sub of body.subscribers) {
-                if (sub && sub.email) {
-                    await sbPost("/rest/v1/subscribers?on_conflict=email", {
-                        email: sub.email.toLowerCase().trim(),
-                        name: sub.name || "",
-                        start_date: sub.startDate || "",
-                        end_date: sub.endDate || "unlimited",
-                        status: sub.status || "active",
-                        linked_emails: Array.isArray(sub.linkedEmails) ? sub.linkedEmails : [],
-                        notes: sub.notes || ""
-                    });
-                }
-            }
-            await sbPost("/rest/v1/rpc/increment_subscribers_version", {});
-            return { success: true, count: body.subscribers.length };
+            const data = await sbRpc("admin_import_subscribers", {
+                p_data: body.subscribers,
+                p_password: adminPw
+            });
+            if (!data.ok) throw new Error(data.error || "خطأ أثناء استيراد البيانات");
+            return { success: true, count: data.count || body.subscribers.length };
         }
     }
 
@@ -279,18 +260,20 @@ async function supabaseApiCall(path, method, body, fullUrl, token) {
             const tail = getUrlTail(fullUrl);
             if (tail) {
                 const email = decodeURIComponent(tail.substring(1));
-                await sbDelete("/rest/v1/active_devices?email=eq." + encodeURIComponent(email));
+                const data = await sbRpc("admin_delete_device", { p_email: email, p_password: adminPw });
+                if (!data.ok) throw new Error(data.error || "خطأ أثناء حذف جهاز");
                 return { success: true };
             }
-            await sbDelete("/rest/v1/active_devices?id=gt.0");
+            const data = await sbRpc("admin_clear_devices", { p_password: adminPw });
+            if (!data.ok) throw new Error(data.error || "خطأ أثناء مسح الأجهزة");
             return { success: true };
         }
         if (path === "/api/subscribers") {
             const tail = getUrlTail(fullUrl);
             if (tail) {
                 const email = decodeURIComponent(tail.substring(1));
-                await sbDelete("/rest/v1/subscribers?email=eq." + encodeURIComponent(email));
-                await sbPost("/rest/v1/rpc/increment_subscribers_version", {});
+                const data = await sbRpc("admin_delete_subscriber", { p_email: email, p_password: adminPw });
+                if (!data.ok) throw new Error(data.error || "خطأ أثناء حذف المشترك");
                 return { success: true };
             }
         }
@@ -300,25 +283,7 @@ async function supabaseApiCall(path, method, body, fullUrl, token) {
 }
 
 async function localApiCall(url, options, token) {
-    options.headers = {
-        'Content-Type': 'application/json',
-        'X-ETA-Auth': ETA_API_SECRET || '',
-        'X-ETA-Ext-ID': OFFICIAL_EXTENSION_ID || '',
-        ...options.headers
-    };
-    if (token) {
-        options.headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const res = await fetch(LOCAL_SERVER + url, options);
-    if (res.status === 401) {
-        throw new Error("Unauthorized");
-    }
-    const data = await res.json();
-    if (!res.ok) {
-        throw new Error(data.error || "حدث خطأ غير متوقع");
-    }
-    return data;
+    throw new Error("Local backend disabled - dashboard uses Supabase directly");
 }
 
 function showToast(msg, type = "ok") {
@@ -914,6 +879,8 @@ async function changePassword() {
         });
         msg.textContent = "تم تغيير كلمة المرور بنجاح ✅";
         msg.className = "success-msg";
+        setAdminPassword(np);
+        adminPassword = np;
         $("newPassword").value = "";
         $("confirmPassword").value = "";
     } catch (err) {
