@@ -1,0 +1,417 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="MYA">
+    <meta name="copyright" content="Copyright (c) 2024-2026 MYA. All rights reserved.">
+    <title>MYA PDF | لوحة التحكم</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="loginScreen" class="login-screen">
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="logo-icon">⚡</div>
+            <h1>MYA PDF</h1>
+            <p>لوحة التحكم الخاصة</p>
+        </div>
+        <div class="login-form">
+            <div class="input-group">
+                <label>كلمة المرور</label>
+                <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" autocomplete="off">
+            </div>
+            <div id="loginError" class="error-msg hidden">كلمة المرور غلط، حاول تاني</div>
+            <button id="loginBtn" class="btn-primary btn-full">دخول</button>
+        </div>
+    </div>
+</div>
+
+<!-- Main Dashboard -->
+<div id="mainDashboard" class="dashboard hidden">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">⚡</div>
+            <div class="brand-text">
+                <span class="brand-name">MYA PDF</span>
+                <span class="brand-sub">لوحة التحكم</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="overview">
+                <span class="nav-icon">📊</span>
+                <span>الإحصائيات</span>
+            </a>
+            <a href="#" class="nav-item" data-page="users">
+                <span class="nav-icon">👥</span>
+                <span>المشتركين</span>
+            </a>
+            <a href="#" class="nav-item" data-page="add">
+                <span class="nav-icon">➕</span>
+                <span>إضافة مشترك</span>
+            </a>
+            <a href="#" class="nav-item" data-page="devices">
+                <span class="nav-icon">💻</span>
+                <span>الأجهزة النشطة</span>
+            </a>
+            <a href="#" class="nav-item" data-page="today-users">
+                <span class="nav-icon">✨</span>
+                <span>مستخدمو اليوم</span>
+            </a>
+            <a href="#" class="nav-item" data-page="settings">
+                <span class="nav-icon">⚙️</span>
+                <span>الإعدادات</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button id="logoutBtn" class="btn-logout">
+                <span>🚪</span> خروج
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Header -->
+        <div class="topbar">
+            <div class="topbar-title" id="pageTitle">الإحصائيات</div>
+            <div class="topbar-info">
+                <div class="status-badge active-badge" id="systemStatus">الوضع: جاري التحميل...</div>
+            </div>
+        </div>
+
+        <!-- Page: Overview -->
+        <div id="page-overview" class="page active">
+            <!-- Row 1: Subscription Stats -->
+            <div class="stats-grid">
+                <div class="stat-card blue">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <div class="stat-num" id="stat-total">0</div>
+                        <div class="stat-label">إجمالي من حملوا الإضافة</div>
+                    </div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <div class="stat-num" id="stat-active">0</div>
+                        <div class="stat-label">اشتراك نشط</div>
+                    </div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-icon">❌</div>
+                    <div class="stat-info">
+                        <div class="stat-num" id="stat-inactive">0</div>
+                        <div class="stat-label">موقوفين / منتهيين</div>
+                    </div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon">⏰</div>
+                    <div class="stat-info">
+                        <div class="stat-num" id="stat-expiring">0</div>
+                        <div class="stat-label">تنتهي خلال 7 أيام</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Usage/Activity Stats -->
+            <div class="stats-grid" style="margin-top: 8px;">
+                <div class="stat-card cyan">
+                    <div class="stat-icon">🟢</div>
+                    <div class="stat-info">
+                        <div class="stat-num" id="stat-using-now">0</div>
+                        <div class="stat-label">يستخدمون الإضافة حالياً</div>
+                    </div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-icon">💤</div>
+                    <div class="stat-info">
+                        <div class="stat-num" id="stat-never-used">0</div>
+                        <div class="stat-label">حملوا الإضافة لكن لم يفتحوها</div>
+                    </div>
+                </div>
+                <div class="stat-card yellow">
+                    <div class="stat-icon">⏸️</div>
+                    <div class="stat-info">
+                        <div class="stat-num" id="stat-dormant">0</div>
+                        <div class="stat-label">لم يستخدموا منذ 7+ أيام</div>
+                    </div>
+                </div>
+                <div class="stat-card teal">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-info">
+                        <div class="stat-num" id="stat-total-checks">0</div>
+                        <div class="stat-label">إجمالي مرات الاستخدام</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-20">
+                <div class="card-header">
+                    <h3>آخر المشتركين</h3>
+                </div>
+                <div class="card-body">
+                    <table class="data-table" id="recentTable">
+                        <thead>
+                            <tr>
+                                <th>الإيميل</th>
+                                <th>الحالة</th>
+                                <th>تاريخ الانتهاء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentBody">
+                            <tr><td colspan="3" class="empty-row">لا يوجد مشتركين بعد</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Users -->
+        <div id="page-users" class="page hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h3>قائمة المشتركين</h3>
+                    <div class="card-actions">
+                        <input type="text" id="searchInput" class="search-input" placeholder="🔍 بحث بالإيميل...">
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="data-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>الإيميل</th>
+                                <th>الاسم</th>
+                                <th>تاريخ البدء</th>
+                                <th>تاريخ الانتهاء</th>
+                                <th>الحالة</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersBody">
+                            <tr><td colspan="7" class="empty-row">لا يوجد مشتركين بعد</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Add User -->
+        <div id="page-add" class="page hidden">
+            <div class="card form-card">
+                <div class="card-header">
+                    <h3 id="formTitle">إضافة مشترك جديد</h3>
+                </div>
+                <div class="card-body">
+                    <input type="hidden" id="editingEmail">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>الإيميل المسجل في المصلحة *</label>
+                            <input type="email" id="userEmail" placeholder="example@company.com" dir="ltr">
+                        </div>
+                        <div class="form-group">
+                            <label>اسم المشترك</label>
+                            <input type="text" id="userName" placeholder="اسم الشركة أو الشخص">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>تاريخ البدء</label>
+                            <input type="date" id="startDate">
+                        </div>
+                        <div class="form-group">
+                            <label>مدة الاشتراك</label>
+                            <select id="duration">
+                                <option value="30">شهر واحد (30 يوم)</option>
+                                <option value="90">3 أشهر (90 يوم)</option>
+                                <option value="180">6 أشهر (180 يوم)</option>
+                                <option value="365" selected>سنة كاملة (365 يوم)</option>
+                                <option value="custom">تحديد يدوي</option>
+                                <option value="unlimited">غير محدود</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="customDateGroup" style="display:none">
+                            <label>تاريخ الانتهاء (يدوي)</label>
+                            <input type="date" id="customEndDate">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>الحالة</label>
+                            <select id="userStatus">
+                                <option value="active">نشط ✅</option>
+                                <option value="inactive">موقوف ❌</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ملاحظات</label>
+                            <input type="text" id="userNotes" placeholder="ملاحظات اختيارية">
+                        </div>
+                    </div>
+
+                    <!-- Linked Companies -->
+                    <div class="linked-section">
+                        <div class="linked-header">
+                            <div class="linked-title">
+                                <span>🔗</span>
+                                <span>شركات مرتبطة بنفس الاشتراك</span>
+                            </div>
+                            <button type="button" id="addLinkedBtn" class="btn-add-linked">➕ إضافة شركة</button>
+                        </div>
+                        <div id="linkedEmailsList" class="linked-list">
+                            <!-- dynamic rows added here -->
+                        </div>
+                        <p class="linked-hint">لو المشترك عنده أكتر من شركة في المصلحة، أضف إيميلاتها هنا وستشتغل الإضافة مع أي منها</p>
+                    </div>
+
+                    <div id="formError" class="error-msg hidden"></div>
+                    <div class="form-actions">
+                        <button id="saveUserBtn" class="btn-primary">💾 حفظ المشترك</button>
+                        <button id="cancelEditBtn" class="btn-secondary hidden">إلغاء</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Active Devices -->
+        <div id="page-devices" class="page hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h3>الأجهزة المستخدمة للإضافة</h3>
+                    <div class="card-actions">
+                        <button id="testDeviceBtn" class="btn-secondary" style="margin-left: 8px; background:#059669; color:#fff;">🧪 اختبار الاتصال</button>
+                        <button id="clearDevicesBtn" class="btn-danger" style="margin-left: 8px;">🗑️ مسح الكل</button>
+                        <button id="refreshDevicesBtn" class="btn-secondary">🔄 تحديث</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="data-table" id="devicesTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>البريد الإلكتروني</th>
+                                <th>عنوان IP</th>
+                                <th>عدد مرات الاستخدام</th>
+                                <th>أول استخدام</th>
+                                <th>آخر استخدام</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="devicesBody">
+                            <tr><td colspan="7" class="empty-row">لا توجد سجلات استخدام حالياً</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Today's New Users -->
+        <div id="page-today-users" class="page hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h3>مستخدمو الإضافة الجدد اليوم</h3>
+                    <div class="card-actions">
+                        <button id="refreshTodayDevicesBtn" class="btn-secondary" onclick="loadTodayDevices()">🔄 تحديث القائمة</button>
+                    </div>
+                </div>
+                <div class="card-body" style="padding: 16px;">
+                    <div id="todayDevicesContainer" class="device-cards-container">
+                        <div class="empty-row" style="text-align:center; padding: 30px; color: var(--text-muted);">جاري تحميل إيميلات اليوم...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page: Settings -->
+        <div id="page-settings" class="page hidden">
+
+            <!-- Mode Toggle Card -->
+            <div class="mode-card" id="modeCard">
+                <div class="mode-info">
+                    <div class="mode-icon" id="modeIcon">🆓</div>
+                    <div class="mode-text">
+                        <div class="mode-title" id="modeTitle">الوضع الحالي: مجاني للجميع</div>
+                        <div class="mode-desc" id="modeDesc">الإضافة متاحة لكل المستخدمين بدون قيود</div>
+                    </div>
+                </div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="modeToggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="card form-card">
+                <div class="card-header">
+                    <h3>الإعدادات</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Dynamic Configuration Settings -->
+                    <h4 style="margin-top:0; margin-bottom:15px; color:var(--text-dim); border-bottom:1px solid var(--glass-border); padding-bottom:10px; font-weight:800;">إعدادات الإضافة (تحديث تلقائي لجميع الأجهزة)</h4>
+                    <div class="form-group">
+                        <label>رسالة التنبيه للمستخدمين (Notice Message)</label>
+                        <input type="text" id="noticeMessage" placeholder="اتركه فارغاً لإخفاء الرسالة">
+                    </div>
+                    <div class="form-group checkbox-group" style="display:flex; align-items:center; gap:12px;">
+                        <input type="checkbox" id="maintenanceMode" style="width:auto; margin:0;">
+                        <label for="maintenanceMode" style="margin:0; font-weight:700; color:var(--red);">تفعيل وضع الصيانة (تعطيل الإضافة مؤقتاً)</label>
+                    </div>
+                    <button id="saveConfigBtn" class="btn-primary" style="margin-top:18px;">💾 حفظ إعدادات الإضافة</button>
+
+                    <hr class="divider">
+
+                    <div class="form-group">
+                        <label>تغيير كلمة المرور</label>
+                        <input type="password" id="newPassword" placeholder="كلمة المرور الجديدة">
+                    </div>
+                    <div class="form-group">
+                        <label>تأكيد كلمة المرور</label>
+                        <input type="password" id="confirmPassword" placeholder="أعد كتابة كلمة المرور">
+                    </div>
+                    <div id="settingsMsg" class="hidden"></div>
+                    <button id="changePasswordBtn" class="btn-primary">💾 تغيير كلمة المرور</button>
+
+                    <hr class="divider">
+
+                    <div class="danger-zone">
+                        <h4>منطقة الخطر</h4>
+                        <button id="exportBtn" class="btn-secondary">📤 تصدير بيانات المشتركين</button>
+                        <button id="importBtn" class="btn-secondary">📥 استيراد بيانات</button>
+                        <input type="file" id="importFile" accept=".json" style="display:none">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="toast hidden"></div>
+
+<!-- Confirm Modal -->
+<div id="confirmModal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <div class="modal-icon">⚠️</div>
+        <h3 id="confirmTitle">تأكيد</h3>
+        <p id="confirmText"></p>
+        <div class="modal-actions">
+            <button id="confirmYes" class="btn-danger">تأكيد</button>
+            <button id="confirmNo" class="btn-secondary">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<script src="scripts/dashboard.js"></script>
+</body>
+</html>
+
