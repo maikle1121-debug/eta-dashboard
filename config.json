@@ -1,9 +1,5 @@
-﻿{
-    "version":  "2.1.10",
-    "maintenanceMode":  false,
-    "noticeMessage":  "",
-    "versionNotes":  "",
-    "configVersion":  "20260802_115749",
-    "mode":  "free",
-    "updatedAt":  "2026-08-02T08:57:55.0668910Z"
+{
+  "mode": "free",
+  "maintenanceMode": false,
+  "noticeMessage": ""
 }
