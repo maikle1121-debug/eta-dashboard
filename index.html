@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 
 <html lang="ar" dir="rtl">
 
@@ -2763,6 +2763,14 @@ input::placeholder { color: var(--text-faint); }
             <span class="bottom-nav-icon">📦</span>
 
             <span>الإصدارات</span>
+
+        </button>
+
+        <button class="bottom-nav-item" data-action="logout" id="logoutBtnMobile" style="color: var(--red);">
+
+            <span class="bottom-nav-icon">🚪</span>
+
+            <span>خروج</span>
 
         </button>
 
@@ -7762,7 +7770,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
 
-            // Store password temporarily and try a real Supabase call to verify
+            // Verify password against Supabase admin_login
 
             setAdminPassword(pw);
 
@@ -7770,7 +7778,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             activeBackend = "supabase";
 
-            const data = await apiFetch("/api/subscribers");
+            const data = await apiFetch("/api/login", { method: 'POST', body: JSON.stringify({ password: pw }) });
 
             // If we got here, password is valid
 
@@ -7816,7 +7824,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Logout
 
-    $("logoutBtn").addEventListener("click", async () => {
+    async function doLogout() {
 
         try {
 
@@ -7834,7 +7842,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         showLogin();
 
-    });
+    }
+
+    $("logoutBtn").addEventListener("click", doLogout);
+
+    if ($("logoutBtnMobile")) $("logoutBtnMobile").addEventListener("click", doLogout);
 
 
 
@@ -7852,7 +7864,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll(".bottom-nav-item").forEach(item => {
 
-        item.addEventListener("click", e => { e.preventDefault(); navigateTo(item.dataset.page); });
+        item.addEventListener("click", e => {
+            if (item.dataset.action === "logout") return;
+            e.preventDefault();
+            navigateTo(item.dataset.page);
+        });
 
     });
 
