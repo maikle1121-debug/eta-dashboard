@@ -842,6 +842,78 @@ input::placeholder { color: var(--text-faint); }
 
 .stat-label { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
 
+.stat-sub   { font-size: 11px; color: var(--text-faint); margin-top: 4px; font-weight: 600; }
+
+.stat-card.cyan .stat-num { color: var(--cyan); }
+
+#stat-new-today-card::before { background: linear-gradient(90deg, var(--cyan), transparent); }
+
+#stat-new-today-card .stat-icon { background: var(--cyan-soft); }
+
+.stat-card.up   { border-color: rgba(52, 211, 153, 0.45); box-shadow: 0 0 24px var(--green-glow); }
+
+.stat-card.up::before   { background: linear-gradient(90deg, var(--green), transparent); }
+
+.stat-card.up .stat-icon   { background: var(--green-soft); }
+
+.stat-card.up .stat-num   { color: var(--green); }
+
+.stat-card.down { border-color: rgba(248, 113, 113, 0.45); box-shadow: 0 0 24px var(--red-glow); }
+
+.stat-card.down::before   { background: linear-gradient(90deg, var(--red), transparent); }
+
+.stat-card.down .stat-icon { background: var(--red-soft); }
+
+.stat-card.down .stat-num { color: var(--red); }
+
+.stat-card.pulse { animation: cardPulse 0.55s ease 2; }
+
+@keyframes cardPulse {
+
+    0%, 100% { transform: scale(1); }
+
+    50%      { transform: scale(1.035); }
+
+}
+
+.sound-toggle-btn {
+
+    background: var(--glass);
+
+    border: 1px solid var(--glass-border);
+
+    border-radius: 24px;
+
+    padding: 6px 16px;
+
+    color: var(--text);
+
+    font-family: 'Cairo', sans-serif;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: all var(--transition);
+
+    margin-left: 10px;
+
+}
+
+.sound-toggle-btn:hover {
+
+    background: var(--glass-hover);
+
+    border-color: var(--accent);
+
+    box-shadow: 0 0 14px var(--accent-glow);
+
+}
+
+.sound-toggle-btn.off { opacity: 0.5; }
+
 
 
 @keyframes fadeInUp {
@@ -2792,6 +2864,8 @@ input::placeholder { color: var(--text-faint); }
 
             <div class="topbar-info">
 
+                <button id="soundToggleBtn" class="sound-toggle-btn" title="تفعيل / كتم صوت تنبيه العملاء الجدد">🔔</button>
+
                 <div class="status-badge active-badge" id="systemStatus">الوضع: جاري التحميل...</div>
 
             </div>
@@ -2804,7 +2878,7 @@ input::placeholder { color: var(--text-faint); }
 
         <div id="page-overview" class="page active">
 
-            <!-- Row 1: Subscription Stats -->
+            <!-- Stats Cards -->
 
             <div class="stats-grid">
 
@@ -2816,7 +2890,7 @@ input::placeholder { color: var(--text-faint); }
 
                         <div class="stat-num" id="stat-total">0</div>
 
-                        <div class="stat-label">إجمالي من حملوا الإضافة</div>
+                        <div class="stat-label">إجمالي العملاء</div>
 
                     </div>
 
@@ -2828,59 +2902,23 @@ input::placeholder { color: var(--text-faint); }
 
                     <div class="stat-info">
 
-                        <div class="stat-num" id="stat-active">0</div>
+                        <div class="stat-num" id="stat-using-now">0</div>
 
-                        <div class="stat-label">اشتراك نشط</div>
-
-                    </div>
-
-                </div>
-
-                <div class="stat-card red">
-
-                    <div class="stat-icon">❌</div>
-
-                    <div class="stat-info">
-
-                        <div class="stat-num" id="stat-inactive">0</div>
-
-                        <div class="stat-label">موقوفين / منتهيين</div>
+                        <div class="stat-label">يستخدمون الإضافة حالياً (24 ساعة)</div>
 
                     </div>
 
                 </div>
-
-                <div class="stat-card orange">
-
-                    <div class="stat-icon">⏰</div>
-
-                    <div class="stat-info">
-
-                        <div class="stat-num" id="stat-expiring">0</div>
-
-                        <div class="stat-label">تنتهي خلال 7 أيام</div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-
-            <!-- Row 2: Usage/Activity Stats -->
-
-            <div class="stats-grid" style="margin-top: 8px;">
 
                 <div class="stat-card cyan">
 
-                    <div class="stat-icon">🟢</div>
+                    <div class="stat-icon">🆕</div>
 
                     <div class="stat-info">
 
-                        <div class="stat-num" id="stat-using-now">0</div>
+                        <div class="stat-num" id="stat-new-week">0</div>
 
-                        <div class="stat-label">يستخدمون الإضافة حالياً</div>
+                        <div class="stat-label">عملاء جدد (آخر 7 أيام)</div>
 
                     </div>
 
@@ -2888,13 +2926,13 @@ input::placeholder { color: var(--text-faint); }
 
                 <div class="stat-card purple">
 
-                    <div class="stat-icon">💤</div>
+                    <div class="stat-icon">📊</div>
 
                     <div class="stat-info">
 
-                        <div class="stat-num" id="stat-never-used">0</div>
+                        <div class="stat-num" id="stat-total-checks">0</div>
 
-                        <div class="stat-label">حملوا الإضافة لكن لم يفتحوها</div>
+                        <div class="stat-label">إجمالي مرات الاستخدام</div>
 
                     </div>
 
@@ -2916,13 +2954,71 @@ input::placeholder { color: var(--text-faint); }
 
                 <div class="stat-card teal">
 
-                    <div class="stat-icon">📊</div>
+                    <div class="stat-icon">📈</div>
 
                     <div class="stat-info">
 
-                        <div class="stat-num" id="stat-total-checks">0</div>
+                        <div class="stat-num" id="stat-avg-usage">—</div>
 
-                        <div class="stat-label">إجمالي مرات الاستخدام</div>
+                        <div class="stat-label">متوسط الاستخدام اليومي</div>
+
+                    </div>
+
+                </div>
+
+                <div class="stat-card orange">
+
+                    <div class="stat-icon">✨</div>
+
+                    <div class="stat-info">
+
+                        <div class="stat-num" id="stat-avg-new">—</div>
+
+                        <div class="stat-label">متوسط العملاء الجدد يومياً</div>
+
+                    </div>
+
+                </div>
+
+                <div class="stat-card blue">
+
+                    <div class="stat-icon">📅</div>
+
+                    <div class="stat-info">
+
+                        <div class="stat-num" id="stat-today-users">0</div>
+
+                        <div class="stat-label">مستخدمون اليوم</div>
+
+                    </div>
+
+                </div>
+
+                <div class="stat-card orange">
+
+                    <div class="stat-icon">💻</div>
+
+                    <div class="stat-info">
+
+                        <div class="stat-num" id="stat-total-devices">0</div>
+
+                        <div class="stat-label">إجمالي الأجهزة</div>
+
+                    </div>
+
+                </div>
+
+                <div class="stat-card" id="stat-new-today-card">
+
+                    <div class="stat-icon">🔔</div>
+
+                    <div class="stat-info">
+
+                        <div class="stat-num" id="stat-new-today">0</div>
+
+                        <div class="stat-label">عملاء جدد اليوم (أول استخدام)</div>
+
+                        <div class="stat-sub">يُصفَّر تلقائياً بعد الساعة 12 ليلاً</div>
 
                     </div>
 
@@ -4778,63 +4874,123 @@ function navigateTo(page) {
 
 // ─── STATS PAGE ──────────────────────────────────────────────
 
+function buildMergedDevices(devices) {
+
+    const map = {};
+
+    (Array.isArray(devices) ? devices : []).forEach(d => {
+
+        const rawKey = getEmail(d);
+
+        if (!rawKey) return;
+
+        const key = rawKey.toLowerCase().trim();
+
+        const cc = getCheckCount(d);
+
+        const fs = getFirstSeen(d);
+
+        const ls = getLastSeen(d);
+
+        if (!map[key]) map[key] = { email: d.email || d.Email || d.userEmail || rawKey, firstSeen: fs, lastSeen: ls, checkCount: 0 };
+
+        map[key].checkCount += cc;
+
+        if (fs && (!map[key].firstSeen || new Date(fs) < new Date(map[key].firstSeen))) map[key].firstSeen = fs;
+
+        if (ls && (!map[key].lastSeen || new Date(ls) > new Date(map[key].lastSeen))) map[key].lastSeen = ls;
+
+    });
+
+    return Object.values(map);
+
+}
+
 function renderStatsFromList(list, devices) {
 
     if (!Array.isArray(list)) return;
 
-    const active   = list.filter(isEffectivelyActive).length;
+    const merged = buildMergedDevices(devices);
 
-    const inactive = list.filter(u => u.status === "inactive" || isExpired(getSubEndDate(u))).length;
+    const now = new Date();
 
-    const expiring = list.filter(u => isEffectivelyActive(u) && expiresInDays(getSubEndDate(u)) <= 7).length;
+    const nowMs = now.getTime();
 
+    const DAY_MS = 86400000;
 
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+    const startOfWindow7 = startOfToday - 6 * DAY_MS;
+
+    const usingNow = merged.filter(d => d.lastSeen && (nowMs - new Date(d.lastSeen).getTime()) < DAY_MS).length;
+
+    const dormant  = merged.filter(d => d.lastSeen && (nowMs - new Date(d.lastSeen).getTime()) >= 7 * DAY_MS).length;
+
+    const totalChecks = merged.reduce((s, d) => s + d.checkCount, 0);
+
+    const totalDevices = merged.length;
+
+    const newWeek = merged.filter(d => d.firstSeen && new Date(d.firstSeen).getTime() >= startOfWindow7).length;
+
+    const todayUsers = merged.filter(d => d.lastSeen && new Date(d.lastSeen).getTime() >= startOfToday).length;
+
+    const newToday = merged.filter(d => d.firstSeen && new Date(d.firstSeen).getTime() >= startOfToday).length;
+
+    const avgNewPerDay = +(newWeek / 7).toFixed(1);
+
+    let usageSum = 0;
+
+    let usageCnt = 0;
+
+    merged.forEach(d => {
+
+        if (!d.firstSeen) return;
+
+        const days = Math.max(1, (nowMs - new Date(d.firstSeen).getTime()) / DAY_MS);
+
+        usageSum += d.checkCount / days;
+
+        usageCnt++;
+
+    });
+
+    const avgUsagePerDay = usageCnt ? +(usageSum / usageCnt).toFixed(1) : 0;
 
     $("stat-total").textContent    = list.length;
 
-    $("stat-active").textContent   = active;
+    $("stat-using-now").textContent   = usingNow;
 
-    $("stat-inactive").textContent = inactive;
+    $("stat-new-week").textContent    = newWeek;
 
-    $("stat-expiring").textContent = expiring;
+    $("stat-total-checks").textContent = totalChecks.toLocaleString("en-US");
 
+    $("stat-dormant").textContent      = dormant;
 
+    $("stat-avg-usage").textContent    = avgUsagePerDay ? "~" + avgUsagePerDay : "—";
 
-    // Device-based usage stats
+    $("stat-avg-new").textContent      = avgNewPerDay ? "~" + avgNewPerDay : "—";
 
-    if (Array.isArray(devices)) {
+    $("stat-today-users").textContent  = todayUsers;
 
-        const now = Date.now();
+    $("stat-total-devices").textContent = totalDevices;
 
-        const DAY_MS = 86400000;
+    $("stat-new-today").textContent    = newToday;
 
+    const newTodayCard = $("stat-new-today-card");
 
+    if (newTodayCard) {
 
-        const usingNow = devices.filter(d => getLastSeen(d) && (now - new Date(getLastSeen(d)).getTime()) < DAY_MS).length;
+        newTodayCard.classList.remove("up", "down");
 
-        const dormant  = devices.filter(d => getLastSeen(d) && (now - new Date(getLastSeen(d)).getTime()) >= 7 * DAY_MS).length;
+        if (avgNewPerDay > 0) {
 
-        const totalChecks = devices.reduce((sum, d) => sum + getCheckCount(d), 0);
+            if (newToday > avgNewPerDay) newTodayCard.classList.add("up");
 
+            else if (newToday < avgNewPerDay) newTodayCard.classList.add("down");
 
-
-        const deviceEmails = new Set(devices.map(d => d.email));
-
-        const neverUsed = list.filter(u => isEffectivelyActive(u) && !deviceEmails.has(u.email)).length;
-
-
-
-        $("stat-using-now").textContent   = usingNow;
-
-        $("stat-never-used").textContent   = neverUsed;
-
-        $("stat-dormant").textContent      = dormant;
-
-        $("stat-total-checks").textContent = totalChecks;
+        }
 
     }
-
-
 
     const sortedList = [...list].sort((a, b) => {
 
@@ -4892,17 +5048,207 @@ async function loadStats() {
 
         console.error("[Dashboard] loadStats error:", err);
 
-        $("stat-total").textContent    = "—";
+        ["stat-total","stat-using-now","stat-new-week","stat-total-checks","stat-dormant","stat-avg-usage","stat-avg-new","stat-today-users","stat-total-devices","stat-new-today"].forEach(id => {
 
-        $("stat-active").textContent   = "—";
+            const el = $(id);
 
-        $("stat-inactive").textContent = "—";
+            if (el) el.textContent = "—";
 
-        $("stat-expiring").textContent = "—";
+        });
 
         const tbody = $("recentBody");
 
         if (tbody) tbody.innerHTML = '<tr><td colspan="3" class="empty-row" style="color:var(--red);">فشل تحميل البيانات: ' + escapeHtml(err.message) + '</td></tr>';
+
+    }
+
+}
+
+
+
+// ─── NEW CUSTOMER ALERT (SOUND + TOAST) ──────────────────────
+
+let soundEnabled = localStorage.getItem("eta_sound_enabled") !== "0";
+
+let alertAudioCtx = null;
+
+let lastKnownNewToday = new Set();
+
+let newTodayBaselineReady = false;
+
+let lastNewTodayDayKey = "";
+
+const ALERT_POLL_MS = 15000;
+
+function ensureAudioCtx() {
+
+    try {
+
+        if (!alertAudioCtx) {
+
+            const AC = window.AudioContext || window.webkitAudioContext;
+
+            if (!AC) return null;
+
+            alertAudioCtx = new AC();
+
+        }
+
+        if (alertAudioCtx.state === "suspended") alertAudioCtx.resume();
+
+        return alertAudioCtx;
+
+    } catch (e) {
+
+        return null;
+
+    }
+
+}
+
+function initAudioOnGesture() {
+
+    const unlock = () => {
+
+        ensureAudioCtx();
+
+        ["pointerdown", "touchstart", "keydown", "click"].forEach(ev => document.removeEventListener(ev, unlock));
+
+    };
+
+    ["pointerdown", "touchstart", "keydown", "click"].forEach(ev => document.addEventListener(ev, unlock));
+
+}
+
+function playAlertSound() {
+
+    if (!soundEnabled) return;
+
+    const ctx = ensureAudioCtx();
+
+    if (!ctx) return;
+
+    const t0 = ctx.currentTime;
+
+    [[880, 0], [1174.66, 0.18], [1567.98, 0.36]].forEach(([freq, dt]) => {
+
+        const osc = ctx.createOscillator();
+
+        const gain = ctx.createGain();
+
+        osc.type = "sine";
+
+        osc.frequency.value = freq;
+
+        gain.gain.setValueAtTime(0.0001, t0 + dt);
+
+        gain.gain.exponentialRampToValueAtTime(0.35, t0 + dt + 0.03);
+
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dt + 0.5);
+
+        osc.connect(gain).connect(ctx.destination);
+
+        osc.start(t0 + dt);
+
+        osc.stop(t0 + dt + 0.55);
+
+    });
+
+}
+
+function getDayKey(d) {
+
+    return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+
+}
+
+function notifyNewCustomer(email) {
+
+    playAlertSound();
+
+    if (navigator.vibrate) navigator.vibrate(250);
+
+    showToast("🔔 عميل جديد دخل الآن: " + email, "ok");
+
+    const card = $("stat-new-today-card");
+
+    if (card) {
+
+        card.classList.remove("pulse");
+
+        void card.offsetWidth;
+
+        card.classList.add("pulse");
+
+    }
+
+}
+
+async function detectNewCustomers() {
+
+    try {
+
+        const dash = $("mainDashboard");
+
+        if (!dash || dash.classList.contains("hidden")) return;
+
+        if (document.visibilityState === "hidden") return;
+
+        const data = await apiFetch("/api/active-devices").catch(() => null);
+
+        if (!data) return;
+
+        const merged = buildMergedDevices(normalizeArrayResponse(data));
+
+        const now = new Date();
+
+        const dayKey = getDayKey(now);
+
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+        if (dayKey !== lastNewTodayDayKey) {
+
+            lastNewTodayDayKey = dayKey;
+
+            lastKnownNewToday = new Set();
+
+            newTodayBaselineReady = false;
+
+        }
+
+        const newToday = merged.filter(d => d.firstSeen && new Date(d.firstSeen).getTime() >= startOfToday);
+
+        const currentEmails = new Set(newToday.map(d => d.email.toLowerCase()));
+
+        if (!newTodayBaselineReady) {
+
+            newTodayBaselineReady = true;
+
+            lastKnownNewToday = currentEmails;
+
+            return;
+
+        }
+
+        const added = [...currentEmails].filter(e => !lastKnownNewToday.has(e));
+
+        if (added.length) {
+
+            added.forEach(e => {
+
+                const rec = newToday.find(d => d.email.toLowerCase() === e);
+
+                notifyNewCustomer(rec ? rec.email : e);
+
+            });
+
+        }
+
+        lastKnownNewToday = currentEmails;
+
+    } catch (err) {
+
+        console.error("[Dashboard] detectNewCustomers error:", err);
 
     }
 
@@ -8133,6 +8479,50 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
     }, 30000);
+
+    // ── New Customer Alert (Sound) ──
+
+    initAudioOnGesture();
+
+    const soundBtn = $("soundToggleBtn");
+
+    if (soundBtn) {
+
+        soundBtn.textContent = soundEnabled ? "🔔" : "🔕";
+
+        soundBtn.classList.toggle("off", !soundEnabled);
+
+        soundBtn.addEventListener("click", () => {
+
+            soundEnabled = !soundEnabled;
+
+            localStorage.setItem("eta_sound_enabled", soundEnabled ? "1" : "0");
+
+            soundBtn.textContent = soundEnabled ? "🔔" : "🔕";
+
+            soundBtn.classList.toggle("off", !soundEnabled);
+
+            showToast(soundEnabled ? "🔔 تنبيه الصوت مفعّل" : "🔕 تنبيه الصوت مكتوم", "ok");
+
+            if (soundEnabled) playAlertSound();
+
+        });
+
+    }
+
+    setInterval(detectNewCustomers, ALERT_POLL_MS);
+
+    setTimeout(detectNewCustomers, 5000);
+
+    document.addEventListener("visibilitychange", () => {
+
+        if (document.visibilityState === "visible") {
+
+            newTodayBaselineReady = false;
+
+        }
+
+    });
 
 });
 
