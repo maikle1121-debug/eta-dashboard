@@ -4922,59 +4922,101 @@ function renderStatsFromList(list, devices) {
 
     const startOfWindow7 = startOfToday - 6 * DAY_MS;
 
-    const usingNow = merged.filter(d => d.lastSeen && (nowMs - new Date(d.lastSeen).getTime()) < DAY_MS).length;
 
-    const dormant  = merged.filter(d => d.lastSeen && (nowMs - new Date(d.lastSeen).getTime()) >= 7 * DAY_MS).length;
 
+    // ─── Device-based usage stats (unchanged) ───
+    const usingNow   = merged.filter(d => d.lastSeen && (nowMs - new Date(d.lastSeen).getTime()) < DAY_MS).length;
     const totalChecks = merged.reduce((s, d) => s + d.checkCount, 0);
-
     const totalDevices = merged.length;
-
-    const newWeek = merged.filter(d => d.firstSeen && new Date(d.firstSeen).getTime() >= startOfWindow7).length;
-
     const todayUsers = merged.filter(d => d.lastSeen && new Date(d.lastSeen).getTime() >= startOfToday).length;
-
-    const newToday = merged.filter(d => d.firstSeen && new Date(d.firstSeen).getTime() >= startOfToday).length;
-
-    const avgNewPerDay = +(newWeek / 7).toFixed(1);
-
     let usageSum = 0;
-
     let usageCnt = 0;
-
     merged.forEach(d => {
-
         if (!d.firstSeen) return;
-
         const days = Math.max(1, (nowMs - new Date(d.firstSeen).getTime()) / DAY_MS);
-
         usageSum += d.checkCount / days;
-
         usageCnt++;
-
     });
-
     const avgUsagePerDay = usageCnt ? +(usageSum / usageCnt).toFixed(1) : 0;
 
-    $("stat-total").textContent    = list.length;
 
-    $("stat-using-now").textContent   = usingNow;
 
-    $("stat-new-week").textContent    = newWeek;
+    // ─── Client / subscriber stats come from the SUBSCRIBERS table ───
+    const emailToOwner = {};
+    const clientEmails = new Set();
 
-    $("stat-total-checks").textContent = totalChecks.toLocaleString("en-US");
+    list.forEach(u => {
+        const main = String(u.email || "").toLowerCase().trim();
+        const all = main ? [main] : [];
+        (getSubLinkedEmails(u) || []).forEach(e => {
+            const s = String(e).toLowerCase().trim();
+            if (s) all.push(s);
+        });
+        all.forEach(e => { if (!e) return; clientEmails.add(e); emailToOwner[e] = u; });
+    });
 
-    $("stat-dormant").textContent      = dormant;
+    const totalClients = clientEmails.size || list.length;
 
-    $("stat-avg-usage").textContent    = avgUsagePerDay ? "~" + avgUsagePerDay : "—";
+    // Per-email last activity from device heartbeats
+    const lastActiveByEmail = {};
+    merged.forEach(d => {
+        const em = String(d.email || "").toLowerCase().trim();
+        if (!em) return;
+        const ts = d.lastSeen ? new Date(d.lastSeen).getTime() : null;
+        if (ts && (!lastActiveByEmail[em] || ts > lastActiveByEmail[em])) lastActiveByEmail[em] = ts;
+    });
 
-    $("stat-avg-new").textContent      = avgNewPerDay ? "~" + avgNewPerDay : "—";
+    // Last activity of a client = max(subscriber.last_active, device.last_seen)
+    function ownerLastActive(em) {
+        const o = emailToOwner[em];
+        let t = 0;
+        if (o) {
+            const la = o.last_active || o.lastActive || o.updated_at || o.updatedAt;
+            if (la) { const v = new Date(la).getTime(); if (!isNaN(v)) t = v; }
+            if (!t && o.created_at) { const v = new Date(o.created_at).getTime(); if (!isNaN(v)) t = v; }
+        }
+        const dev = lastActiveByEmail[em] || 0;
+        return dev > t ? dev : t;
+    }
 
-    $("stat-today-users").textContent  = todayUsers;
+    let newClients7 = 0;
+    let newToday = 0;
+    let dormant = 0;
+    clientEmails.forEach(em => {
+        const o = emailToOwner[em];
+        const created = o ? new Date(getSubStartDate(o)).getTime() : 0;
+        if (created && !isNaN(created)) {
+            if (created >= startOfWindow7) newClients7++;
+            if (created >= startOfToday) newToday++;
+        }
+        const la = ownerLastActive(em);
+        if (!la || nowMs - la >= 7 * DAY_MS) dormant++;
+    });
+
+    const avgNewPerDay = +(newClients7 / 7).toFixed(1);
+
+
+
+    // ─── Assign ───
+    $("stat-total").textContent         = totalClients;
+
+    $("stat-using-now").textContent     = usingNow;
+
+    $("stat-new-week").textContent      = newClients7;
+
+    $("stat-total-checks").textContent  = totalChecks.toLocaleString("en-US");
+
+    $("stat-dormant").textContent       = dormant;
+
+    $("stat-avg-usage").textContent     = avgUsagePerDay ? "~" + avgUsagePerDay : "—";
+
+    $("stat-avg-new").textContent       = avgNewPerDay ? "~" + avgNewPerDay : "—";
+
+    $("stat-today-users").textContent   = todayUsers;
 
     $("stat-total-devices").textContent = totalDevices;
 
-    $("stat-new-today").textContent    = newToday;
+    $("stat-new-today").textContent     = newToday;
 
     const newTodayCard = $("stat-new-today-card");
 
@@ -4991,6 +5033,8 @@ function renderStatsFromList(list, devices) {
         }
 
     }
+
+
 
     const sortedList = [...list].sort((a, b) => {
 
@@ -5027,7 +5071,6 @@ function renderStatsFromList(list, devices) {
     }
 
 }
-
 
 
 async function loadStats() {
