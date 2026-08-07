@@ -5263,17 +5263,22 @@ async function detectNewCustomers() {
 
         const currentEmails = new Set(newToday.map(d => d.email.toLowerCase()));
 
-        if (!newTodayBaselineReady) {
+        // Persisted per-day "already alerted" set (survives reloads and tab switches)
+        const alertStoreKey = "eta_newAlerted_v1";
 
-            newTodayBaselineReady = true;
+        let alertStore = { days: {} };
 
-            lastKnownNewToday = currentEmails;
+        try {
 
-            return;
+            const raw = localStorage.getItem(alertStoreKey);
 
-        }
+            if (raw) { const p = JSON.parse(raw); if (p && p.days && typeof p.days === "object") alertStore = p; }
 
-        const added = [...currentEmails].filter(e => !lastKnownNewToday.has(e));
+        } catch (e) {}
+
+        const alertedToday = new Set(alertStore.days[dayKey] || []);
+
+        const added = [...currentEmails].filter(e => !alertedToday.has(e));
 
         if (added.length) {
 
@@ -5284,6 +5289,12 @@ async function detectNewCustomers() {
                 notifyNewCustomer(rec ? rec.email : e);
 
             });
+
+            added.forEach(e => alertedToday.add(e));
+
+            alertStore.days[dayKey] = [...alertedToday];
+
+            try { localStorage.setItem(alertStoreKey, JSON.stringify(alertStore)); } catch (e) {}
 
         }
 
