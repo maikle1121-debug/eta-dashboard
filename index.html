@@ -6534,7 +6534,7 @@ function buildGlobalFeaturesUI() {
         row.innerHTML =
             '<label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;">' +
             '<input type="checkbox" id="gfeat_' + f.k + '" style="width:18px;height:18px;accent-color:#2563eb;"' + (on ? " checked" : "") + '>' +
-            '<span>' + f.label + '</span></label>' +
+            '<span style="color:#000000;">' + f.label + '</span></label>' +
             '<input type="date" id="gfeatOpen_' + f.k + '" value="' + av + '" title="يفتح تلقائياً في (تاريخ فقط)" style="font-size:12px;padding:6px;border:1px solid #dde3ea;border-radius:8px;" dir="ltr">';
         grid.appendChild(row);
     });
@@ -6622,7 +6622,7 @@ function buildFeaturesUI(features) {
         row.innerHTML =
             '<label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;">' +
             '<input type="checkbox" id="feat_' + f.k + '" style="width:18px;height:18px;accent-color:#2563eb;"' + (on ? " checked" : "") + '>' +
-            '<span>' + f.label + '</span></label>' +
+            '<span style="color:#000000;">' + f.label + '</span></label>' +
             '<input type="date" id="featOpen_' + f.k + '" value="' + av + '" title="يفتح تلقائياً في (تاريخ فقط)" style="font-size:12px;padding:6px;border:1px solid #dde3ea;border-radius:8px;" dir="ltr">';
         grid.appendChild(row);
     });
