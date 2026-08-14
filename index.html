@@ -6456,9 +6456,12 @@ async function testDeviceConnection() {
 const FEATURE_DEFS = [
     { k: "downloadInvoices", label: "تحميل الفواتير والمستندات" },
     { k: "downloadEReceipts", label: "تحميل الإيصالات" },
-    { k: "vatReport", label: "تقارير VAT (مبيعات / مشتريات)" },
-    { k: "t4Report", label: "نموذج 41" },
-    { k: "excelReports", label: "تقارير Excel والبيان" },
+    { k: "fullReport", label: "التقرير الشامل" },
+    { k: "transactionsData", label: "بيان تعاملات" },
+    { k: "vatSales", label: "تقرير مبيعات قيمة مضافة" },
+    { k: "vatPurchases", label: "تقرير مشتريات قيمة مضافة" },
+    { k: "form41", label: "نموذج 41" },
+    { k: "stmtCert", label: "كشف حساب / شهادة تعاملات" },
     { k: "myaerp", label: "MYAERP (مرسل / مستلم) وقسائم الأكواد" },
     { k: "miniErp", label: "نظام MiniERP" },
     { k: "supabaseSync", label: "مزامنة Supabase" }
