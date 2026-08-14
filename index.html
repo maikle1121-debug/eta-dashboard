@@ -2756,6 +2756,14 @@ input::placeholder { color: var(--text-faint); }
 
             </a>
 
+            <a href="#" class="nav-item" data-page="permissions">
+
+                <span class="nav-icon">🔑</span>
+
+                <span>صلاحيات الإضافة</span>
+
+            </a>
+
             <a href="#" class="nav-item" data-page="settings">
 
                 <span class="nav-icon">⚙️</span>
@@ -2839,6 +2847,14 @@ input::placeholder { color: var(--text-faint); }
             <span class="bottom-nav-icon">✨</span>
 
             <span>مستخدمو اليوم</span>
+
+        </button>
+
+        <button class="bottom-nav-item" data-page="permissions">
+
+            <span class="bottom-nav-icon">🔑</span>
+
+            <span>الصلاحيات</span>
 
         </button>
 
@@ -3617,28 +3633,6 @@ input::placeholder { color: var(--text-faint); }
 
                     </div>
 
-                    <div class="linked-section" style="margin-top:18px;">
-
-                        <div class="linked-header">
-
-                            <div class="linked-title">
-
-                                <span>🎛️</span>
-
-                                <span>الميزات العامة (لكل العملاء حتى في الوضع المجاني)</span>
-
-                            </div>
-
-                            <button type="button" id="resetGlobalFeaturesBtn" class="btn-add-linked" onclick="buildGlobalFeaturesUI()">🔄 تفعيل الكل</button>
-
-                        </div>
-
-                        <div id="globalFeaturesGrid" class="features-grid"></div>
-
-                        <p class="linked-hint">إخفاء أي ميزة من هنا يخفيها فوراً على كل الأجهزة لكل العملاء (حتى في الوضع المجاني ومن غير مشتركين). التوقيت اختياري: بداية و/أو نهاية بالصيغة 2026-08-15T10:00.</p>
-
-                    </div>
-
                     <button id="saveConfigBtn" class="btn-primary" style="margin-top:18px;">💾 حفظ إعدادات الإضافة</button>
 
 
@@ -3684,6 +3678,56 @@ input::placeholder { color: var(--text-faint); }
                         <input type="file" id="importFile" accept=".json" style="display:none">
 
                     </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- Page: Extension Permissions -->
+
+        <div id="page-permissions" class="page hidden">
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h3>🔑 صلاحيات الإضافة</h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <h4 style="margin-top:0; margin-bottom:15px; color:var(--text-dim); border-bottom:1px solid var(--glass-border); padding-bottom:10px; font-weight:800;">الميزات العامة (لكل العملاء حتى في الوضع المجاني)</h4>
+
+                    <div class="linked-section">
+
+                        <div class="linked-header">
+
+                            <div class="linked-title">
+
+                                <span>🎛️</span>
+
+                                <span>الميزات العامة (لكل العملاء حتى في الوضع المجاني)</span>
+
+                            </div>
+
+                            <button type="button" id="resetGlobalFeaturesBtn" class="btn-add-linked" onclick="enableAllGlobalFeatures()">🔄 تفعيل الكل</button>
+
+                        </div>
+
+                        <div id="globalFeaturesGrid" class="features-grid"></div>
+
+                        <p class="linked-hint">أوقف أي ميزة لتختفي فوراً على كل الأجهزة لكل العملاء (حتى في الوضع المجاني ومن غير مشتركين). حدّد تاريخاً اختيارياً «يفتح تلقائياً في» لتفتح الميزة من نفسها في هذا التوقيت من غير أي تدخل، أو فعّل المفتاح يدوياً لتفتح فوراً قبل التاريخ.</p>
+
+                    </div>
+
+                    <button id="saveGlobalFeaturesBtn" class="btn-primary" style="margin-top:18px;">💾 حفظ الصلاحيات</button>
+
+                    <div id="globalFeaturesMsg" class="hidden" style="margin-top:12px;"></div>
 
                 </div>
 
@@ -5005,7 +5049,7 @@ function navigateTo(page) {
 
     if (bottomItem) bottomItem.classList.add("active");
 
-    const titles = { overview: "الإحصائيات", users: "المشتركين", add: "إضافة مشترك", devices: "الأجهزة النشطة", settings: "الإعدادات", logs: "📋 سجل النشاط", versions: "📦 الإصدارات" };
+    const titles = { overview: "الإحصائيات", users: "المشتركين", add: "إضافة مشترك", devices: "الأجهزة النشطة", "today-users": "مستخدمو اليوم", permissions: "🔑 صلاحيات الإضافة", settings: "الإعدادات", logs: "📋 سجل النشاط", versions: "📦 الإصدارات" };
 
     $("pageTitle").textContent = titles[page] || page;
 
@@ -5030,6 +5074,8 @@ function navigateTo(page) {
     if (page === "devices")  loadDevices();
 
     if (page === "today-users") loadTodayDevices();
+
+    if (page === "permissions") { loadGlobalFeaturesPage(); }
 
     if (page === "settings") { updateModeUI(); updateControlPanel(); }
 
@@ -6475,13 +6521,12 @@ function buildGlobalFeaturesUI() {
     grid.innerHTML = "";
     FEATURE_DEFS.forEach(f => {
         const v = globalFeatures && globalFeatures[f.k] ? globalFeatures[f.k] : null;
-        let on = true, sv = "", ev = "";
+        let on = true, av = "";
         if (v === false || v === 0) {
             on = false;
         } else if (v && typeof v === "object") {
             on = !(v.enabled === false || v.enabled === 0);
-            if (v.startsAt) sv = String(v.startsAt).slice(0, 16);
-            if (v.endsAt) ev = String(v.endsAt).slice(0, 16);
+            if (v.startsAt) av = String(v.startsAt).slice(0, 16);
         }
         const row = document.createElement("div");
         row.className = "feature-row";
@@ -6490,10 +6535,7 @@ function buildGlobalFeaturesUI() {
             '<label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;">' +
             '<input type="checkbox" id="gfeat_' + f.k + '" style="width:18px;height:18px;accent-color:#2563eb;"' + (on ? " checked" : "") + '>' +
             '<span>' + f.label + '</span></label>' +
-            '<div style="display:flex;gap:8px;">' +
-            '<input type="datetime-local" id="gfeatStart_' + f.k + '" value="' + sv + '" title="بداية الفترة" style="font-size:12px;padding:6px;border:1px solid #dde3ea;border-radius:8px;" dir="ltr">' +
-            '<input type="datetime-local" id="gfeatEnd_' + f.k + '" value="' + ev + '" title="نهاية الفترة" style="font-size:12px;padding:6px;border:1px solid #dde3ea;border-radius:8px;" dir="ltr">' +
-            '</div>';
+            '<input type="datetime-local" id="gfeatOpen_' + f.k + '" value="' + av + '" title="يفتح تلقائياً في (اختياري)" style="font-size:12px;padding:6px;border:1px solid #dde3ea;border-radius:8px;" dir="ltr">';
         grid.appendChild(row);
     });
 }
@@ -6504,20 +6546,61 @@ function collectGlobalFeatures() {
         const cb = document.getElementById("gfeat_" + f.k);
         if (!cb) return;
         const on = cb.checked;
-        const sEl = document.getElementById("gfeatStart_" + f.k);
-        const eEl = document.getElementById("gfeatEnd_" + f.k);
-        let startVal = null, endVal = null;
-        if (sEl && sEl.value) startVal = new Date(sEl.value).toISOString();
-        if (eEl && eEl.value) endVal = new Date(eEl.value).toISOString();
-        if (!on && !startVal && !endVal) {
+        const oEl = document.getElementById("gfeatOpen_" + f.k);
+        const openVal = oEl && oEl.value ? new Date(oEl.value).toISOString() : null;
+        if (!on && !openVal) {
             features[f.k] = { enabled: false };
-        } else if (on && !startVal && !endVal) {
+        } else if (on && !openVal) {
             features[f.k] = { enabled: true };
         } else {
-            features[f.k] = { enabled: on, startsAt: startVal, endsAt: endVal };
+            features[f.k] = { enabled: on, startsAt: openVal };
         }
     });
     return features;
+}
+
+function enableAllGlobalFeatures() {
+    FEATURE_DEFS.forEach(f => {
+        const cb = document.getElementById("gfeat_" + f.k);
+        if (cb) cb.checked = true;
+        const oEl = document.getElementById("gfeatOpen_" + f.k);
+        if (oEl) oEl.value = "";
+    });
+}
+
+async function loadGlobalFeaturesPage() {
+    try {
+        const settings = await apiFetch("/api/settings");
+        if (settings && settings.features) globalFeatures = settings.features;
+    } catch (err) {
+        console.error("[Dashboard] loadGlobalFeaturesPage failed:", err.message);
+    }
+    buildGlobalFeaturesUI();
+}
+
+async function saveGlobalFeatures() {
+    const msg = $("globalFeaturesMsg");
+    msg.className = "success-msg";
+    msg.textContent = "جاري الحفظ...";
+    msg.classList.remove("hidden");
+    try {
+        await apiFetch("/api/settings/config", {
+            method: 'POST',
+            body: JSON.stringify({ features: collectGlobalFeatures() })
+        });
+        fetch("/api/invalidate-cache", { method: "POST" }).catch(() => {});
+        if (typeof chrome !== "undefined" && chrome.runtime) {
+            chrome.runtime.sendMessage(OFFICIAL_EXTENSION_ID, { action: "forceConfigRefresh" }, () => {
+                if (chrome.runtime.lastError) { /* ignore */ }
+            });
+        }
+        msg.className = "success-msg";
+        msg.textContent = "✅ تم حفظ الصلاحيات وتحديثها لكل الأجهزة";
+        setTimeout(() => msg.classList.add("hidden"), 3500);
+    } catch (err) {
+        msg.className = "error-msg";
+        msg.textContent = "❌ " + (err.message || "فشل الحفظ");
+    }
 }
 
 function buildFeaturesUI(features) {
@@ -6526,13 +6609,12 @@ function buildFeaturesUI(features) {
     grid.innerHTML = "";
     FEATURE_DEFS.forEach(f => {
         const v = features && features[f.k] ? features[f.k] : null;
-        let on = true, sv = "", ev = "";
+        let on = true, av = "";
         if (v === false || v === 0) {
             on = false;
         } else if (v && typeof v === "object") {
             on = !(v.enabled === false || v.enabled === 0);
-            if (v.startsAt) sv = String(v.startsAt).slice(0, 16);
-            if (v.endsAt) ev = String(v.endsAt).slice(0, 16);
+            if (v.startsAt) av = String(v.startsAt).slice(0, 16);
         }
         const row = document.createElement("div");
         row.className = "feature-row";
@@ -6541,10 +6623,7 @@ function buildFeaturesUI(features) {
             '<label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;">' +
             '<input type="checkbox" id="feat_' + f.k + '" style="width:18px;height:18px;accent-color:#2563eb;"' + (on ? " checked" : "") + '>' +
             '<span>' + f.label + '</span></label>' +
-            '<div style="display:flex;gap:8px;">' +
-            '<input type="datetime-local" id="featStart_' + f.k + '" value="' + sv + '" title="بداية الفترة" style="font-size:12px;padding:6px;border:1px solid #dde3ea;border-radius:8px;" dir="ltr">' +
-            '<input type="datetime-local" id="featEnd_' + f.k + '" value="' + ev + '" title="نهاية الفترة" style="font-size:12px;padding:6px;border:1px solid #dde3ea;border-radius:8px;" dir="ltr">' +
-            '</div>';
+            '<input type="datetime-local" id="featOpen_' + f.k + '" value="' + av + '" title="يفتح تلقائياً في (اختياري)" style="font-size:12px;padding:6px;border:1px solid #dde3ea;border-radius:8px;" dir="ltr">';
         grid.appendChild(row);
     });
 }
@@ -6555,17 +6634,14 @@ function collectFeatures() {
         const cb = document.getElementById("feat_" + f.k);
         if (!cb) return;
         const on = cb.checked;
-        const sEl = document.getElementById("featStart_" + f.k);
-        const eEl = document.getElementById("featEnd_" + f.k);
-        let startVal = null, endVal = null;
-        if (sEl && sEl.value) startVal = new Date(sEl.value).toISOString();
-        if (eEl && eEl.value) endVal = new Date(eEl.value).toISOString();
-        if (!on && !startVal && !endVal) {
+        const oEl = document.getElementById("featOpen_" + f.k);
+        const openVal = oEl && oEl.value ? new Date(oEl.value).toISOString() : null;
+        if (!on && !openVal) {
             features[f.k] = { enabled: false };
-        } else if (on && !startVal && !endVal) {
+        } else if (on && !openVal) {
             features[f.k] = { enabled: true };
         } else {
-            features[f.k] = { enabled: on, startsAt: startVal, endsAt: endVal };
+            features[f.k] = { enabled: on, startsAt: openVal };
         }
     });
     return features;
@@ -7179,7 +7255,7 @@ async function saveConfig() {
 
             method: 'POST',
 
-            body: JSON.stringify({ noticeMessage, maintenanceMode, version, versionNotes, features: collectGlobalFeatures() })
+            body: JSON.stringify({ noticeMessage, maintenanceMode, version, versionNotes })
 
         });
 
@@ -8708,6 +8784,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("changePasswordBtn").addEventListener("click", changePassword);
 
     $("saveConfigBtn").addEventListener("click", saveConfig);
+    $("saveGlobalFeaturesBtn").addEventListener("click", saveGlobalFeatures);
 
     $("exportBtn").addEventListener("click", exportData);
 
