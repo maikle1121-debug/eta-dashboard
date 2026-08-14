@@ -2660,6 +2660,34 @@ input::placeholder { color: var(--text-faint); }
 
 
 
+<!-- Password Prompt Modal -->
+
+<div id="pwPromptModal" style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center">
+
+    <div class="login-card" style="width:min(360px,92vw)">
+
+        <div class="login-form">
+
+            <div class="input-group">
+
+                <label>كلمة المرور</label>
+
+                <input type="password" id="pwPromptInput" placeholder="أدخل كلمة المرور الصحيحة" autocomplete="off">
+
+            </div>
+
+            <div id="pwPromptError" class="error-msg hidden">كلمة المرور غلط، حاول تاني</div>
+
+            <button id="pwPromptBtn" class="btn-primary btn-full">تأكيد</button>
+
+            <button id="pwPromptCancel" class="btn-logout" style="margin-top:8px">إلغاء</button>
+
+        </div>
+
+    </div>
+
+</div>
+
 <!-- Main Dashboard -->
 
 <div id="mainDashboard" class="dashboard hidden">
@@ -4001,6 +4029,52 @@ function setAdminPassword(pw) {
 
 }
 
+function askAdminPassword() {
+
+    return new Promise((resolve) => {
+
+        const modal = $("pwPromptModal");
+
+        const input = $("pwPromptInput");
+
+        const err = $("pwPromptError");
+
+        if (!modal || !input) { resolve(null); return; }
+
+        input.value = "";
+
+        err.classList.add("hidden");
+
+        modal.style.display = "flex";
+
+        input.focus();
+
+        let done = false;
+
+        const finish = (val) => { if (done) return; done = true; modal.style.display = "none"; resolve(val); };
+
+        $("pwPromptBtn").onclick = () => {
+
+            const v = input.value;
+
+            if (!v) { err.textContent = "من فضلك أدخل كلمة المرور"; err.classList.remove("hidden"); return; }
+
+            err.classList.add("hidden");
+
+            finish(v);
+
+        };
+
+        $("pwPromptCancel").onclick = () => finish(null);
+
+        input.onkeydown = (e) => { if (e.key === "Enter") $("pwPromptBtn").click(); };
+
+    });
+
+}
+
+
+
 
 
 // ─── SUPABASE ADAPTER ────────────────────────────────────────
@@ -4105,7 +4179,7 @@ async function sbDelete(path) {
 
 
 
-async function sbRpc(fn, params = {}) {
+async function sbRpc(fn, params = {}, _retried = false) {
 
     const res = await sbFetchWithTimeout(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
 
@@ -4127,7 +4201,25 @@ async function sbRpc(fn, params = {}) {
 
     }
 
-    return await res.json();
+    const data = await res.json();
+
+    if (!_retried && fn !== "admin_login" && data && data.ok === false && (data.error === "Unauthorized" || data.error === "wrong password")) {
+
+        const newPw = await askAdminPassword();
+
+        if (newPw) {
+
+            adminPassword = newPw;
+
+            setAdminPassword(newPw);
+
+            return await sbRpc(fn, { ...params, p_password: newPw }, true);
+
+        }
+
+    }
+
+    return data;
 
 }
 
@@ -4479,7 +4571,7 @@ async function supabaseApiCall(path, method, body, fullUrl, token) {
 
         if (path === "/api/settings/config") {
 
-            const update = { p_password: adminPw };
+            const update = { p_password: getAdminPassword() };
 
             if (body.maintenanceMode !== undefined) update.p_maintenance_mode = !!body.maintenanceMode;
 
@@ -4501,7 +4593,7 @@ async function supabaseApiCall(path, method, body, fullUrl, token) {
 
                     p_features: body.features,
 
-                    p_password: adminPw
+                    p_password: getAdminPassword()
 
                 });
 
