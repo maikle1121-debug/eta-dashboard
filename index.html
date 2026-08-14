@@ -3589,6 +3589,28 @@ input::placeholder { color: var(--text-faint); }
 
                     </div>
 
+                    <div class="linked-section" style="margin-top:18px;">
+
+                        <div class="linked-header">
+
+                            <div class="linked-title">
+
+                                <span>🎛️</span>
+
+                                <span>الميزات العامة (لكل العملاء حتى في الوضع المجاني)</span>
+
+                            </div>
+
+                            <button type="button" id="resetGlobalFeaturesBtn" class="btn-add-linked" onclick="buildGlobalFeaturesUI()">🔄 تفعيل الكل</button>
+
+                        </div>
+
+                        <div id="globalFeaturesGrid" class="features-grid"></div>
+
+                        <p class="linked-hint">إخفاء أي ميزة من هنا يخفيها فوراً على كل الأجهزة لكل العملاء (حتى في الوضع المجاني ومن غير مشتركين). التوقيت اختياري: بداية و/أو نهاية بالصيغة 2026-08-15T10:00.</p>
+
+                    </div>
+
                     <button id="saveConfigBtn" class="btn-primary" style="margin-top:18px;">💾 حفظ إعدادات الإضافة</button>
 
 
@@ -4365,7 +4387,7 @@ async function supabaseApiCall(path, method, body, fullUrl, token) {
 
         if (path === "/api/settings") {
 
-            const rows = await sbGet("/rest/v1/settings?id=eq.1&select=mode,maintenance_mode,notice_message,version,version_notes,blocked_emails,subscribers_version");
+            const rows = await sbGet("/rest/v1/settings?id=eq.1&select=mode,maintenance_mode,notice_message,version,version_notes,blocked_emails,subscribers_version,features");
 
             if (rows && rows.length > 0) {
 
@@ -4384,6 +4406,8 @@ async function supabaseApiCall(path, method, body, fullUrl, token) {
                     versionNotes: s.version_notes || "",
 
                     blockedEmails: s.blocked_emails || [],
+
+                    features: s.features || {},
 
                     subscribersVersion: String(s.subscribers_version || 1)
 
@@ -4470,6 +4494,20 @@ async function supabaseApiCall(path, method, body, fullUrl, token) {
             const data = await sbRpc("admin_update_settings", update);
 
             if (!data.ok) throw new Error(data.error || "خطأ أثناء حفظ الإعدادات");
+
+            if (body.features) {
+
+                const fdata = await sbRpc("admin_update_global_features", {
+
+                    p_features: body.features,
+
+                    p_password: adminPw
+
+                });
+
+                if (!fdata.ok) throw new Error(fdata.error || "خطأ أثناء حفظ الميزات");
+
+            }
 
             return { success: true };
 
@@ -6334,6 +6372,59 @@ const FEATURE_DEFS = [
     { k: "supabaseSync", label: "مزامنة Supabase" }
 ];
 
+let globalFeatures = null;
+
+function buildGlobalFeaturesUI() {
+    const grid = document.getElementById("globalFeaturesGrid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    FEATURE_DEFS.forEach(f => {
+        const v = globalFeatures && globalFeatures[f.k] ? globalFeatures[f.k] : null;
+        let on = true, sv = "", ev = "";
+        if (v === false || v === 0) {
+            on = false;
+        } else if (v && typeof v === "object") {
+            on = !(v.enabled === false || v.enabled === 0);
+            if (v.startsAt) sv = String(v.startsAt).slice(0, 16);
+            if (v.endsAt) ev = String(v.endsAt).slice(0, 16);
+        }
+        const row = document.createElement("div");
+        row.className = "feature-row";
+        row.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid #e8ecf1;border-radius:10px;margin-bottom:8px;background:#fff;";
+        row.innerHTML =
+            '<label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;">' +
+            '<input type="checkbox" id="gfeat_' + f.k + '" style="width:18px;height:18px;accent-color:#2563eb;"' + (on ? " checked" : "") + '>' +
+            '<span>' + f.label + '</span></label>' +
+            '<div style="display:flex;gap:8px;">' +
+            '<input type="datetime-local" id="gfeatStart_' + f.k + '" value="' + sv + '" title="بداية الفترة" style="font-size:12px;padding:6px;border:1px solid #dde3ea;border-radius:8px;" dir="ltr">' +
+            '<input type="datetime-local" id="gfeatEnd_' + f.k + '" value="' + ev + '" title="نهاية الفترة" style="font-size:12px;padding:6px;border:1px solid #dde3ea;border-radius:8px;" dir="ltr">' +
+            '</div>';
+        grid.appendChild(row);
+    });
+}
+
+function collectGlobalFeatures() {
+    const features = {};
+    FEATURE_DEFS.forEach(f => {
+        const cb = document.getElementById("gfeat_" + f.k);
+        if (!cb) return;
+        const on = cb.checked;
+        const sEl = document.getElementById("gfeatStart_" + f.k);
+        const eEl = document.getElementById("gfeatEnd_" + f.k);
+        let startVal = null, endVal = null;
+        if (sEl && sEl.value) startVal = new Date(sEl.value).toISOString();
+        if (eEl && eEl.value) endVal = new Date(eEl.value).toISOString();
+        if (!on && !startVal && !endVal) {
+            features[f.k] = { enabled: false };
+        } else if (on && !startVal && !endVal) {
+            features[f.k] = { enabled: true };
+        } else {
+            features[f.k] = { enabled: on, startsAt: startVal, endsAt: endVal };
+        }
+    });
+    return features;
+}
+
 function buildFeaturesUI(features) {
     const grid = document.getElementById("featuresGrid");
     if (!grid) return;
@@ -6965,6 +7056,10 @@ function renderModeUI(isPaid, settings) {
 
         if ($("extVersionNotes")) $("extVersionNotes").value = settings.versionNotes || "";
 
+        if (settings && settings.features) globalFeatures = settings.features;
+
+        buildGlobalFeaturesUI();
+
     }
 
 }
@@ -6989,7 +7084,7 @@ async function saveConfig() {
 
             method: 'POST',
 
-            body: JSON.stringify({ noticeMessage, maintenanceMode, version, versionNotes })
+            body: JSON.stringify({ noticeMessage, maintenanceMode, version, versionNotes, features: collectGlobalFeatures() })
 
         });
 
