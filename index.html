@@ -3250,6 +3250,29 @@ input::placeholder { color: var(--text-faint); }
 
 
 
+<!-- Features (per-feature control) -->
+                    <div class="linked-section">
+
+                        <div class="linked-header">
+
+                            <div class="linked-title">
+
+                                <span>🎛️</span>
+
+                                <span>الميزات (تشغيل / إيقاف)</span>
+
+                            </div>
+
+                            <button type="button" id="resetFeaturesBtn" class="btn-add-linked" onclick="buildFeaturesUI()">🔄 تفعيل الكل</button>
+
+                        </div>
+
+                        <div id="featuresGrid" class="features-grid"></div>
+
+                        <p class="linked-hint">أوقف أي ميزة لتختفي فوراً على كل أجهزة المشترك. التوقيت اختياري: حدّد بداية و/أو نهاية بالصيغة 2026-08-15T10:00 (بتوقيت الخادم).</p>
+
+                    </div>
+
                     <div id="formError" class="error-msg hidden"></div>
 
                     <div class="form-actions">
@@ -4409,6 +4432,22 @@ async function supabaseApiCall(path, method, body, fullUrl, token) {
             });
 
             if (!data.ok) throw new Error(data.error || "خطأ أثناء حفظ البيانات");
+
+            if (sub.features) {
+
+                const fdata = await sbRpc("admin_update_features", {
+
+                    p_email: sub.email.toLowerCase().trim(),
+
+                    p_features: sub.features,
+
+                    p_password: adminPw
+
+                });
+
+                if (!fdata.ok) throw new Error(fdata.error || "خطأ أثناء حفظ الميزات");
+
+            }
 
             return { success: true };
 
@@ -6284,6 +6323,68 @@ async function testDeviceConnection() {
 
 // ─── ADD & EDIT SUBSCRIBER FORM ────────────────────────────────
 
+const FEATURE_DEFS = [
+    { k: "downloadInvoices", label: "تحميل الفواتير والمستندات" },
+    { k: "downloadEReceipts", label: "تحميل الإيصالات" },
+    { k: "vatReport", label: "تقارير VAT (مبيعات / مشتريات)" },
+    { k: "t4Report", label: "نموذج 41" },
+    { k: "excelReports", label: "تقارير Excel والبيان" },
+    { k: "myaerp", label: "MYAERP (مرسل / مستلم) وقسائم الأكواد" },
+    { k: "minierp", label: "نظام MiniERP" },
+    { k: "supabaseSync", label: "مزامنة Supabase" }
+];
+
+function buildFeaturesUI(features) {
+    const grid = document.getElementById("featuresGrid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    FEATURE_DEFS.forEach(f => {
+        const v = features && features[f.k] ? features[f.k] : null;
+        let on = true, sv = "", ev = "";
+        if (v === false || v === 0) {
+            on = false;
+        } else if (v && typeof v === "object") {
+            on = !(v.enabled === false || v.enabled === 0);
+            if (v.startsAt) sv = String(v.startsAt).slice(0, 16);
+            if (v.endsAt) ev = String(v.endsAt).slice(0, 16);
+        }
+        const row = document.createElement("div");
+        row.className = "feature-row";
+        row.style.cssText = "display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid #e8ecf1;border-radius:10px;margin-bottom:8px;background:#fff;";
+        row.innerHTML =
+            '<label style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;">' +
+            '<input type="checkbox" id="feat_' + f.k + '" style="width:18px;height:18px;accent-color:#2563eb;"' + (on ? " checked" : "") + '>' +
+            '<span>' + f.label + '</span></label>' +
+            '<div style="display:flex;gap:8px;">' +
+            '<input type="datetime-local" id="featStart_' + f.k + '" value="' + sv + '" title="بداية الفترة" style="font-size:12px;padding:6px;border:1px solid #dde3ea;border-radius:8px;" dir="ltr">' +
+            '<input type="datetime-local" id="featEnd_' + f.k + '" value="' + ev + '" title="نهاية الفترة" style="font-size:12px;padding:6px;border:1px solid #dde3ea;border-radius:8px;" dir="ltr">' +
+            '</div>';
+        grid.appendChild(row);
+    });
+}
+
+function collectFeatures() {
+    const features = {};
+    FEATURE_DEFS.forEach(f => {
+        const cb = document.getElementById("feat_" + f.k);
+        if (!cb) return;
+        const on = cb.checked;
+        const sEl = document.getElementById("featStart_" + f.k);
+        const eEl = document.getElementById("featEnd_" + f.k);
+        let startVal = null, endVal = null;
+        if (sEl && sEl.value) startVal = new Date(sEl.value).toISOString();
+        if (eEl && eEl.value) endVal = new Date(eEl.value).toISOString();
+        if (!on && !startVal && !endVal) {
+            features[f.k] = { enabled: false };
+        } else if (on && !startVal && !endVal) {
+            features[f.k] = { enabled: true };
+        } else {
+            features[f.k] = { enabled: on, startsAt: startVal, endsAt: endVal };
+        }
+    });
+    return features;
+}
+
 function resetAddForm() {
 
     $("formTitle").textContent = "إضافة مشترك جديد";
@@ -6315,6 +6416,8 @@ function resetAddForm() {
     
 
     // Clear Linked Emails list
+
+    buildFeaturesUI();
 
     $("linkedEmailsList").innerHTML = "";
 
@@ -6417,6 +6520,8 @@ async function editUser(email) {
         linkedList.forEach(email => addLinkedEmailRow(email));
 
 
+
+        buildFeaturesUI(u.features);
 
         $("cancelEditBtn").classList.remove("hidden");
 
@@ -6526,7 +6631,9 @@ async function saveUser() {
 
                 endDate,
 
-                linkedEmails
+                linkedEmails,
+
+                features: collectFeatures()
 
             })
 
