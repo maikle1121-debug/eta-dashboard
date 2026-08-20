@@ -4532,7 +4532,7 @@ async function supabaseApiCall(path, method, body, fullUrl, token) {
 
         if (path === "/api/active-devices-count") {
 
-            const res = await sbFetchWithTimeout(SUPABASE_URL + "/rest/v1/active_devices?select=id", { method: "HEAD", headers: { ...SB_HEADERS, "Prefer": "count=exact" } });
+            const res = await sbFetchWithTimeout(SUPABASE_URL + "/rest/v1/active_devices_real?select=id", { method: "HEAD", headers: { ...SB_HEADERS, "Prefer": "count=exact" } });
             const range = res.headers.get("Content-Range");
             return { count: range ? parseInt(range.split("/")[1]) : 0 };
 
@@ -4781,7 +4781,7 @@ async function supabaseApiCall(path, method, body, fullUrl, token) {
 
         if (path === "/api/active-devices-count") {
 
-            const res = await sbFetchWithTimeout(SUPABASE_URL + "/rest/v1/active_devices?select=id", { method: "HEAD", headers: { ...SB_HEADERS, "Prefer": "count=exact" } });
+            const res = await sbFetchWithTimeout(SUPABASE_URL + "/rest/v1/active_devices_real?select=id", { method: "HEAD", headers: { ...SB_HEADERS, "Prefer": "count=exact" } });
             const range = res.headers.get("Content-Range");
             return { count: range ? parseInt(range.split("/")[1]) : 0 };
 
