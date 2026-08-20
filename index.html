@@ -4521,6 +4521,31 @@ async function supabaseApiCall(path, method, body, fullUrl, token) {
 
         }
 
+        if (path === "/api/active-devices-recent") {
+
+            const d = new Date(); d.setDate(d.getDate() - 7); const iso = d.toISOString();
+            const data = await sbGet("/rest/v1/active_devices?last_seen=gte." + iso + "&order=last_seen.desc");
+
+            return normalizeArrayResponse(data);
+
+        }
+
+        if (path === "/api/active-devices-count") {
+
+            const res = await sbFetchWithTimeout(SUPABASE_URL + "/rest/v1/active_devices?select=id", { method: "HEAD", headers: { ...SB_HEADERS, "Prefer": "count=exact" } });
+            const range = res.headers.get("Content-Range");
+            return { count: range ? parseInt(range.split(/)[1]) : 0 };
+
+        }
+
+        if (path === "/api/active-devices-dummy") {
+
+            const data = await sbGet("/rest/v1/active_devices?order=last_seen.desc");
+
+            return normalizeArrayResponse(data);
+
+        }
+
         if (path === "/api/settings") {
 
             const rows = await sbGet("/rest/v1/settings?id=eq.1&select=mode,maintenance_mode,notice_message,version,version_notes,blocked_emails,subscribers_version,features");
@@ -4738,6 +4763,31 @@ async function supabaseApiCall(path, method, body, fullUrl, token) {
     if (method === "DELETE") {
 
         if (path === "/api/active-devices") {
+
+            const data = await sbGet("/rest/v1/active_devices?order=last_seen.desc");
+
+            return normalizeArrayResponse(data);
+
+        }
+
+        if (path === "/api/active-devices-recent") {
+
+            const d = new Date(); d.setDate(d.getDate() - 7); const iso = d.toISOString();
+            const data = await sbGet("/rest/v1/active_devices?last_seen=gte." + iso + "&order=last_seen.desc");
+
+            return normalizeArrayResponse(data);
+
+        }
+
+        if (path === "/api/active-devices-count") {
+
+            const res = await sbFetchWithTimeout(SUPABASE_URL + "/rest/v1/active_devices?select=id", { method: "HEAD", headers: { ...SB_HEADERS, "Prefer": "count=exact" } });
+            const range = res.headers.get("Content-Range");
+            return { count: range ? parseInt(range.split(/)[1]) : 0 };
+
+        }
+
+        if (path === "/api/active-devices-dummy") {
 
             const tail = getUrlTail(fullUrl);
 
@@ -5001,16 +5051,13 @@ async function showDashboard() {
 
         cachedSubscribers = null;
 
-        const [settings, list, devices] = await Promise.all([
-
+                const [settings, list, devices, countObj] = await Promise.all([
             apiFetch("/api/settings").catch(() => ({})),
-
             getSubscribers(true),
-
-            apiFetch("/api/active-devices").catch(() => [])
-
+            apiFetch("/api/active-devices-recent").catch(() => []),
+            apiFetch("/api/active-devices-count").catch(() => ({count: 0}))
         ]);
-
+        window.__REAL_TOTAL_DEVICES = countObj ? countObj.count : 0;
         renderStatsFromList(list, normalizeArrayResponse(devices));
 
         renderModeUI(settings.mode === "paid", settings);
@@ -5142,7 +5189,7 @@ function renderStatsFromList(list, devices) {
     // ─── Device-based usage stats (unchanged) ───
     const usingNow   = merged.filter(d => d.lastSeen && (nowMs - new Date(d.lastSeen).getTime()) < DAY_MS).length;
     const totalChecks = merged.reduce((s, d) => s + d.checkCount, 0);
-    const totalDevices = merged.length;
+    const totalDevices = window.__REAL_TOTAL_DEVICES || merged.length;
     const todayUsers = merged.filter(d => d.lastSeen && new Date(d.lastSeen).getTime() >= startOfToday).length;
     let usageSum = 0;
     let usageCnt = 0;
@@ -5289,19 +5336,14 @@ function renderStatsFromList(list, devices) {
 
 
 async function loadStats() {
-
     try {
-
-        const [list, devices] = await Promise.all([
-
+        const [list, devices, countObj] = await Promise.all([
             getSubscribers(),
-
-            apiFetch("/api/active-devices").catch(() => [])
-
+            apiFetch("/api/active-devices-recent").catch(() => []),
+            apiFetch("/api/active-devices-count").catch(() => ({count: 0}))
         ]);
-
+        window.__REAL_TOTAL_DEVICES = countObj ? countObj.count : 0;
         renderStatsFromList(list, normalizeArrayResponse(devices));
-
     } catch (err) {
 
         console.error("[Dashboard] loadStats error:", err);
@@ -5452,7 +5494,7 @@ async function detectNewCustomers() {
 
         if (document.visibilityState === "hidden") return;
 
-        const data = await apiFetch("/api/active-devices").catch(() => null);
+        const data = await apiFetch("/api/active-devices-recent").catch(() => null);
 
         if (!data) return;
 
@@ -5927,7 +5969,7 @@ async function loadDevices() {
 
         const [devData, settings, subsData] = await Promise.all([
 
-            apiFetch("/api/active-devices").catch(e => { console.error("[Devices] Failed to fetch active-devices:", e.message); loadErrors.push("الأجهزة: " + e.message); return []; }),
+            apiFetch("/api/active-devices-recent").catch(e => { console.error("[Devices] Failed to fetch active-devices:", e.message); loadErrors.push("الأجهزة: " + e.message); return []; }),
 
             apiFetch("/api/settings").catch(e => { console.error("[Devices] Failed to fetch settings:", e.message); loadErrors.push("الإعدادات: " + e.message); return {}; }),
 
@@ -8107,7 +8149,7 @@ async function loadVersionsPage() {
 
         const [devicesData, subsData] = await Promise.all([
 
-            apiFetch("/api/active-devices").catch(() => []),
+            apiFetch("/api/active-devices-recent").catch(() => []),
 
             getSubscribers().catch(() => [])
 
@@ -8966,7 +9008,7 @@ async function loadTodayDevices() {
         container.innerHTML = '<div class="empty-row" style="text-align:center; padding: 30px; color: var(--text-muted);">جاري تحميل مستخدمي اليوم...</div>';
 
         const [devData, subsData] = await Promise.all([
-            apiFetch("/api/active-devices").catch(e => []),
+            apiFetch("/api/active-devices-recent").catch(e => []),
             apiFetch("/api/subscribers").catch(e => [])
         ]);
 
