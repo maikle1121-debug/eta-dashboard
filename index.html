@@ -4056,6 +4056,32 @@ input::placeholder { color: var(--text-faint); }
                 </div>
             </div>
 
+            <!-- Free Mode Quota Customizer (إمكانية تعلية الباقة المجانية في حالة الوضع العام مجاني) -->
+            <div class="card" style="margin-bottom: 24px; border: 1px solid rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.05); border-radius: 12px;">
+                <div class="card-body" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; padding: 18px 24px;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <span style="font-size: 34px;">📈</span>
+                        <div>
+                            <div style="font-weight: bold; font-size: 15px; color: var(--text); margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+                                <span>تعلية وتخصيص حصة الباقة المجانية</span>
+                                <span style="font-size: 11px; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 2px 8px; border-radius: 10px; font-weight: bold;">في الوضع العام المجاني</span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-dim); line-height: 1.5;">
+                                عندما يكون الوضع العام للإضافة "مجاني للجميع"، يمكنك زيادة عدد الإيصالات الشهرية المجانية المتاحة للمستخدمين لأي رقم تريده (افتراضياً 100).
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.15); padding: 4px 10px; border-radius: 10px; border: 1px solid rgba(16, 185, 129, 0.25);">
+                            <label style="font-size: 13px; font-weight: bold; white-space: nowrap; color: var(--text);">الحصة المجانية:</label>
+                            <input type="number" id="freeModeQuotaInput" min="1" max="100000" value="100" style="width: 100px; font-weight: bold; font-size: 14px; color: #34d399; text-align: center; padding: 6px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.4); background: var(--bg);">
+                            <span style="font-size: 12px; color: var(--text-dim);">إيصال/شهر</span>
+                        </div>
+                        <button type="button" id="saveFreeQuotaBtn" class="btn-primary" style="background: var(--green); border: none; padding: 8px 18px; font-size: 13px; font-weight: bold; border-radius: 8px; cursor: pointer;">💾 حفظ الحصة المجانية</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- The 5 Plans Overview Grid -->
             <div class="card" style="margin-bottom: 24px;">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -4073,9 +4099,9 @@ input::placeholder { color: var(--text-faint); }
                                     <span style="font-size: 11px; background: rgba(148, 163, 184, 0.2); color: #cbd5e1; padding: 2px 8px; border-radius: 10px; font-weight: bold;">الافتراضي</span>
                                 </div>
                                 <h4 style="margin: 0 0 6px 0; font-size: 15px; color: var(--text); font-weight: bold;">الباقة المجانية (Free Starter)</h4>
-                                <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">يقدر العميل يبعت 100 إيصال في الشهر على هذا الإيميل (مع إمكانية تعديلها).</p>
+                                <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">يقدر العميل يبعت <span id="rcFreePlanDescQuota" style="font-weight: bold; color: var(--accent);">100</span> إيصال في الشهر في الوضع المجاني (قابلة للزيادة من الإدارة).</p>
                             </div>
-                            <div style="padding: 8px 10px; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 12px; font-weight: bold; color: var(--accent); text-align: center;">
+                            <div id="rcFreePlanCardQuota" style="padding: 8px 10px; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 12px; font-weight: bold; color: var(--accent); text-align: center;">
                                 100 إيصال / شهر
                             </div>
                         </div>
@@ -9175,13 +9201,15 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // الشرط 1: لو العميل مش مشترك و الوضع العام للاضافه مجاني يبقي العميل علي الباقه المجانيه (100)
+        const currentFreeLimit = (typeof window.customFreeReceiptQuota !== "undefined" && window.customFreeReceiptQuota > 0) ? window.customFreeReceiptQuota : 100;
+
+        // الشرط 1: لو العميل مش مشترك و الوضع العام للاضافه مجاني يبقي العميل علي الباقه المجانيه (مع الحصة المخصصة للوضع المجاني)
         if (!isSubscribed && sysMode === "free") {
             planSel.value = "free_100";
-            quotaIn.value = 100;
+            quotaIn.value = currentFreeLimit;
             if (quotaGrp) quotaGrp.style.display = "block";
             if (secBox) secBox.style.display = "none";
-            if (hintEl) hintEl.innerHTML = '🆓 <b>الوضع العام مجاني والعميل غير مشترك:</b> تم تحديد <b>الباقة المجانية (100 إيصال/شهر)</b> افتراضياً.';
+            if (hintEl) hintEl.innerHTML = '🆓 <b>الوضع العام مجاني والعميل غير مشترك:</b> تم تحديد <b>الباقة المجانية (' + currentFreeLimit + ' إيصال/شهر)</b> افتراضياً.';
         }
         // الشرط 2: لو الوضع العام للاضافه اشتراك و العميل مش مشترك هتديله 100 ايصال شهري لغايه لما انا اقفل الموضوع ده
         else if (!isSubscribed && sysMode === "paid") {
@@ -9258,6 +9286,41 @@ document.addEventListener("DOMContentLoaded", () => {
             if (qInput) qInput.value = 0;
             if (secBox) secBox.style.display = "none";
             if (hintEl) hintEl.innerHTML = '🚫 <b>اختيار يدوي:</b> بدون باقة إيصالات أصلاً لهذا العميل.';
+        }
+    });
+
+    // Save Free Mode Quota Button Listener
+    $("saveFreeQuotaBtn")?.addEventListener("click", async () => {
+        const val = parseInt($("freeModeQuotaInput")?.value, 10);
+        if (!val || val <= 0) {
+            showToast("يرجى إدخال رقم صحيح لحصة الإيصالات المجانية", "err");
+            return;
+        }
+
+        try {
+            let sRows = await sbGet("/rest/v1/settings?id=eq.1&select=features");
+            let currFeatures = (sRows && sRows[0] && sRows[0].features) || {};
+            currFeatures.freeReceiptQuota = val;
+            await sbPatch("/rest/v1/settings?id=eq.1", { features: currFeatures });
+
+            window.customFreeReceiptQuota = val;
+            if ($("rcFreePlanDescQuota")) $("rcFreePlanDescQuota").textContent = val;
+            if ($("rcFreePlanCardQuota")) $("rcFreePlanCardQuota").textContent = val + " إيصال / شهر";
+            if (typeof RC_PLANS !== "undefined" && RC_PLANS.free_100) {
+                RC_PLANS.free_100.quota = val;
+            }
+
+            showToast("تم تحديث حصة الباقة المجانية في الوضع المجاني إلى (" + val + ") إيصال بنجاح ✅");
+
+            // If current system mode is free, refresh add page defaults
+            const sysMode = (typeof currentLocalMode !== "undefined" && currentLocalMode) || 
+                            (document.getElementById("modeToggle")?.checked ? "paid" : "free");
+            if (sysMode === "free" && typeof applyAutoReceiptPlanLogic === "function") {
+                applyAutoReceiptPlanLogic(false);
+            }
+        } catch(e) {
+            console.error(e);
+            showToast("حدث خطأ أثناء حفظ الحصة المجانية", "err");
         }
     });
 
@@ -9677,16 +9740,30 @@ async function loadReceiptsPage() {
         renderReceiptsTable();
         initReceiptsEventListeners();
 
-        // Update allowUnsubReceiptsToggle state
+        // Update allowUnsubReceiptsToggle & freeModeQuota state
         try {
             const stRows = await sbGet("/rest/v1/settings?id=eq.1&select=features");
             const stFeatures = (stRows && stRows[0] && stRows[0].features) || {};
+            
             const isAllowed = (stFeatures.allowUnsubscribedReceipts?.enabled !== false);
             if ($("allowUnsubReceiptsToggle")) $("allowUnsubReceiptsToggle").checked = isAllowed;
             const statusText = $("allowUnsubReceiptsStatusText");
             if (statusText) {
                 statusText.textContent = isAllowed ? "مفعّل (100 إيصال)" : "مغلق (0 إيصال)";
                 statusText.style.color = isAllowed ? "var(--green)" : "var(--red)";
+            }
+
+            if (stFeatures.freeReceiptQuota && Number(stFeatures.freeReceiptQuota) > 0) {
+                window.customFreeReceiptQuota = Number(stFeatures.freeReceiptQuota);
+            } else {
+                window.customFreeReceiptQuota = 100;
+            }
+
+            if ($("freeModeQuotaInput")) $("freeModeQuotaInput").value = window.customFreeReceiptQuota;
+            if ($("rcFreePlanDescQuota")) $("rcFreePlanDescQuota").textContent = window.customFreeReceiptQuota;
+            if ($("rcFreePlanCardQuota")) $("rcFreePlanCardQuota").textContent = window.customFreeReceiptQuota + " إيصال / شهر";
+            if (typeof RC_PLANS !== "undefined" && RC_PLANS.free_100) {
+                RC_PLANS.free_100.quota = window.customFreeReceiptQuota;
             }
         } catch(stErr) {}
     } catch (err) {
