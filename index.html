@@ -3284,6 +3284,55 @@ input::placeholder { color: var(--text-faint); }
 
 
 
+                    <!-- Receipts Subscription Plan (باقة الإيصالات الإلكترونية) -->
+                    <div class="linked-section" style="border: 1px solid rgba(2, 132, 199, 0.3); background: rgba(2, 132, 199, 0.05); border-radius: 12px; padding: 18px; margin-bottom: 20px;">
+                        <div class="linked-header" style="margin-bottom: 14px;">
+                            <div class="linked-title" style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 22px;">🧾</span>
+                                <span style="font-size: 15px; font-weight: bold; color: var(--accent);">باقة الإيصالات الإلكترونية (Receipts Plan)</span>
+                            </div>
+                            <span style="font-size: 11px; background: rgba(2, 132, 199, 0.2); color: #38bdf8; padding: 3px 10px; border-radius: 10px; font-weight: bold;">الافتراضي: باقة الإضافة (400 إيصال)</span>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 1.5;">
+                                <label>نوع باقة الإيصالات للمشترك *</label>
+                                <select id="addReceiptPlan" class="filter-select" style="width: 100%; font-weight: bold;">
+                                    <option value="ext_400" selected>🧩 باقة الإضافة الأساسية - Basic Plus (400 إيصال/شهر) [الافتراضية للاشتراك]</option>
+                                    <option value="free_100">🆓 الباقة المجانية - Free Starter (100 إيصال/شهر)</option>
+                                    <option value="receipts_800">🧾 باقة الإيصالات الفضية - Silver (600 إلى 800 إيصال/شهر)</option>
+                                    <option value="standard_1000">🌟 الباقة الذهبية القياسية - Gold Pro (800 إلى 1000 إيصال/شهر)</option>
+                                    <option value="enterprise_vip">👑 باقة VIP البلاتينية - Platinum VIP (>1000 + إيميل ثاني)</option>
+                                    <option value="none">🚫 من غير باقة إيصالات أصلاً (بدون إيصالات)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" style="flex: 1;" id="addReceiptQuotaGroup">
+                                <label>حصة الإيصالات الشهرية (قابلة للتعديل)</label>
+                                <input type="number" id="addReceiptQuota" min="1" max="100000" value="400" style="font-weight: bold; color: var(--accent);">
+                            </div>
+                        </div>
+
+                        <!-- Secondary Email Container for VIP Plan -->
+                        <div id="addReceiptSecondaryBox" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 10px; padding: 14px; margin-top: 14px; display: none;">
+                            <div style="font-weight: bold; font-size: 13px; color: #fbbf24; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                                <span>👑</span> ميزة ربط إيميل إضافي ثاني (باقة VIP البلاتينية):
+                            </div>
+                            <div class="form-row" style="margin-bottom: 0;">
+                                <div class="form-group" style="margin-bottom: 0; flex: 1.5;">
+                                    <label style="color: #fef08a;">البريد الإلكتروني الثاني المرتبط</label>
+                                    <input type="email" id="addReceiptSecEmail" placeholder="secondary-user@company.com" dir="ltr">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0; flex: 1;">
+                                    <label style="color: #fef08a;">حصة الإيميل الثاني شهرياً</label>
+                                    <input type="number" id="addReceiptSecQuota" min="1" max="50000" value="500" style="color: #fbbf24; font-weight: bold;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="linked-hint" style="margin-top: 10px;">الوضع الافتراضي عند اشتراك العميل في الإضافة هو <b>400 إيصال شهرياً</b>، ويمكنك ترقيته لأي باقة أعلى أو اختيار "من غير باقة إيصالات" إذا لم يكن العميل بحاجة للإيصالات.</p>
+                    </div>
+
                     <!-- Linked Companies -->
 
                     <div class="linked-section">
@@ -9030,6 +9079,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // Add User Form
+
+        // Add Page: Receipt Plan Change Listener
+    $("addReceiptPlan")?.addEventListener("change", () => {
+        const p = $("addReceiptPlan").value;
+        const qInput = $("addReceiptQuota");
+        const qGroup = $("addReceiptQuotaGroup");
+        const secBox = $("addReceiptSecondaryBox");
+        
+        if (p === "ext_400") {
+            if (qGroup) qGroup.style.display = "block";
+            if (qInput) qInput.value = 400;
+            if (secBox) secBox.style.display = "none";
+        } else if (p === "free_100") {
+            if (qGroup) qGroup.style.display = "block";
+            if (qInput) qInput.value = 100;
+            if (secBox) secBox.style.display = "none";
+        } else if (p === "receipts_800") {
+            if (qGroup) qGroup.style.display = "block";
+            if (qInput) qInput.value = 800;
+            if (secBox) secBox.style.display = "none";
+        } else if (p === "standard_1000") {
+            if (qGroup) qGroup.style.display = "block";
+            if (qInput) qInput.value = 1000;
+            if (secBox) secBox.style.display = "none";
+        } else if (p === "enterprise_vip") {
+            if (qGroup) qGroup.style.display = "block";
+            if (qInput) qInput.value = 1500;
+            if (secBox) secBox.style.display = "block";
+            if ($("addReceiptSecQuota") && (!Number($("addReceiptSecQuota").value) || Number($("addReceiptSecQuota").value) <= 0)) {
+                $("addReceiptSecQuota").value = 500;
+            }
+        } else if (p === "none") {
+            if (qGroup) qGroup.style.display = "none";
+            if (qInput) qInput.value = 0;
+            if (secBox) secBox.style.display = "none";
+        }
+    });
 
     $("saveUserBtn").addEventListener("click", saveUser);
 
