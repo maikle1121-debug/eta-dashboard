@@ -4138,7 +4138,7 @@ input::placeholder { color: var(--text-faint); }
                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                         <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.15); padding: 4px 10px; border-radius: 10px; border: 1px solid rgba(16, 185, 129, 0.25);">
                             <label style="font-size: 13px; font-weight: bold; white-space: nowrap; color: var(--text);">الحصة المجانية:</label>
-                            <input type="number" id="freeModeQuotaInput" min="1" max="100000" value="100" style="width: 100px; font-weight: bold; font-size: 14px; color: #34d399; text-align: center; padding: 6px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.4); background: var(--bg);">
+                            <input type="number" id="freeModeQuotaInput" min="0" max="100000" value="100" style="width: 100px; font-weight: bold; font-size: 14px; color: #34d399; text-align: center; padding: 6px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.4); background: var(--bg);">
                             <span style="font-size: 12px; color: var(--text-dim);">إيصال/شهر</span>
                         </div>
                         <button type="button" id="saveFreeQuotaBtn" class="btn-primary" style="background: var(--green); border: none; padding: 8px 18px; font-size: 13px; font-weight: bold; border-radius: 8px; cursor: pointer;">💾 حفظ الحصة المجانية</button>
@@ -9381,9 +9381,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Save Free Mode Quota Button Listener
     $("saveFreeQuotaBtn")?.addEventListener("click", async () => {
-        const val = parseInt($("freeModeQuotaInput")?.value, 10);
-        if (!val || val <= 0) {
-            showToast("يرجى إدخال رقم صحيح لحصة الإيصالات المجانية", "err");
+        const rawVal = $("freeModeQuotaInput")?.value;
+        const val = parseInt(rawVal, 10);
+        if (isNaN(val) || val < 0) {
+            showToast("يرجى إدخال رقم صحيح لحصة الإيصالات المجانية (0 أو أكثر)", "err");
             return;
         }
 
@@ -9400,7 +9401,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 RC_PLANS.free_100.quota = val;
             }
 
-            showToast("تم تحديث حصة الباقة المجانية في الوضع المجاني إلى (" + val + ") إيصال بنجاح ✅");
+            showToast(val === 0 ? "تم إلغاء الباقة المجانية نهائياً (الحصة = 0 إيصال) ⛔" : "تم تحديث حصة الباقة المجانية إلى (" + val + ") إيصال بنجاح ✅");
 
             // If current system mode is free, refresh add page defaults
             const sysMode = (typeof currentLocalMode !== "undefined" && currentLocalMode) || 
@@ -9911,7 +9912,7 @@ async function loadReceiptsPage() {
                         RC_PLANS.enterprise_vip.defaultSecondaryQuota = Number(rpc.enterprise_vip.secondaryQuota);
                     }
                 }
-            } else if (stFeatures.freeReceiptQuota && Number(stFeatures.freeReceiptQuota) > 0) {
+            } else if (stFeatures.freeReceiptQuota !== undefined && !isNaN(Number(stFeatures.freeReceiptQuota))) {
                 RC_PLANS.free_100.defaultQuota = Number(stFeatures.freeReceiptQuota);
             }
 
