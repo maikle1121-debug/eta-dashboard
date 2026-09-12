@@ -4176,7 +4176,7 @@ input::placeholder { color: var(--text-faint); }
                             </div>
                             <div style="background: rgba(0,0,0,0.25); padding: 10px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2);">
                                 <label style="font-size: 11px; color: #34d399; font-weight: bold; display: block; margin-bottom: 4px;">عدد الإيصالات / شهر:</label>
-                                <input type="number" id="planQuota_free_100" min="1" max="100000" value="100" style="width: 100%; font-weight: bold; font-size: 15px; color: #34d399; text-align: center; padding: 6px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.4); background: var(--bg);">
+                                <input type="number" id="planQuota_free_100" min="0" max="100000" value="100" style="width: 100%; font-weight: bold; font-size: 15px; color: #34d399; text-align: center; padding: 6px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.4); background: var(--bg);">
                             </div>
                         </div>
 
@@ -9291,7 +9291,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const currentFreeLimit = (typeof window.customFreeReceiptQuota !== "undefined" && window.customFreeReceiptQuota > 0) ? window.customFreeReceiptQuota : 100;
+        const currentFreeLimit = (typeof window.customFreeReceiptQuota !== "undefined" && !isNaN(Number(window.customFreeReceiptQuota))) ? Number(window.customFreeReceiptQuota) : 100;
 
         // الشرط 1: لو العميل مش مشترك و الوضع العام للاضافه مجاني يبقي العميل علي الباقه المجانيه (مع الحصة المخصصة للوضع المجاني)
         if (!isSubscribed && sysMode === "free") {
@@ -9304,7 +9304,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // الشرط 2: لو الوضع العام للاضافه اشتراك و العميل مش مشترك هتديله 100 ايصال شهري لغايه لما انا اقفل الموضوع ده
         else if (!isSubscribed && sysMode === "paid") {
             planSel.value = "free_100";
-            quotaIn.value = 100;
+            quotaIn.value = currentFreeLimit;
             if (quotaGrp) quotaGrp.style.display = "block";
             if (secBox) secBox.style.display = "none";
             if (hintEl) hintEl.innerHTML = '🔒 <b>الوضع العام اشتراك والعميل غير مشترك:</b> تم منحه <b>100 إيصال شهرياً (الباقة المجانية)</b> كفترة تجريبية في وضع الاشتراك (ويمكنك قفلها باختيار "من غير باقة إيصالات").';
@@ -9840,7 +9840,7 @@ async function loadReceiptsPage() {
                         if (!existing.features.receiptSubscription) {
                             existing.features.receiptSubscription = {
                                 planId: crow.data.planId || "free_100",
-                                quotaLimit: crow.data.quotaLimit || 100,
+                                quotaLimit: (crow.data.quotaLimit !== undefined && crow.data.quotaLimit !== null) ? Number(crow.data.quotaLimit) : ((window.customFreeReceiptQuota !== undefined) ? Number(window.customFreeReceiptQuota) : 100),
                                 monthSent: crow.data.monthSent || 0,
                                 totalSent: crow.data.totalSent || 0
                             };
@@ -9866,7 +9866,7 @@ async function loadReceiptsPage() {
                                 receiptSubscription: {
                                     planId: crow.data.planId || "free_100",
                                     subscriptionPlan: crow.data.subscriptionPlan || "الباقة المجانية",
-                                    quotaLimit: crow.data.quotaLimit || window.customFreeReceiptQuota || 100,
+                                    quotaLimit: (crow.data.quotaLimit !== undefined && crow.data.quotaLimit !== null) ? Number(crow.data.quotaLimit) : ((window.customFreeReceiptQuota !== undefined) ? Number(window.customFreeReceiptQuota) : 100),
                                     monthSent: crow.data.monthSent || 0,
                                     totalSent: crow.data.totalSent || 0
                                 }
@@ -9948,7 +9948,7 @@ function renderReceiptsStats() {
     cachedReceiptSubscribers.forEach(s => {
         let rc = s.features?.receiptSubscription;
         let planId = rc?.planId || 'free_100';
-        let limit = rc?.quotaLimit || RC_PLANS[planId]?.defaultQuota || 100;
+        let limit = (rc?.quotaLimit !== undefined && rc?.quotaLimit !== null) ? Number(rc.quotaLimit) : ((RC_PLANS[planId]?.defaultQuota !== undefined) ? Number(RC_PLANS[planId].defaultQuota) : 100);
         let sent = rc?.monthSent || 0;
 
         if (sent >= limit) exceededCount++;
@@ -9983,7 +9983,7 @@ function renderReceiptsTable() {
         let rc = s.features?.receiptSubscription;
         let planId = rc?.planId || 'free_100';
         let isCustom = (planId === 'custom_quota' || rc?.isCustomQuota);
-        let limit = rc?.quotaLimit || RC_PLANS[planId]?.defaultQuota || 100;
+        let limit = (rc?.quotaLimit !== undefined && rc?.quotaLimit !== null) ? Number(rc.quotaLimit) : ((RC_PLANS[planId]?.defaultQuota !== undefined) ? Number(RC_PLANS[planId].defaultQuota) : 100);
         let sent = rc?.monthSent || 0;
         let isExceeded = sent >= limit;
 
@@ -10020,7 +10020,7 @@ function renderReceiptsTable() {
 
         let isCustom = (rc.planId === 'custom_quota' || rc.isCustomQuota);
         let pInfo = RC_PLANS[rc.planId] || (isCustom ? RC_PLANS.custom_quota : RC_PLANS.free_100);
-        let limit = rc.quotaLimit || pInfo.defaultQuota || 100;
+        let limit = (rc.quotaLimit !== undefined && rc.quotaLimit !== null) ? Number(rc.quotaLimit) : ((pInfo.defaultQuota !== undefined) ? Number(pInfo.defaultQuota) : 100);
         let sent = rc.monthSent || 0;
         let remaining = Math.max(0, limit - sent);
         let isExceeded = sent >= limit;
@@ -10203,7 +10203,7 @@ function initReceiptsEventListeners() {
         btn.disabled = true;
         btn.innerHTML = "جاري الحفظ... ⏳";
         try {
-            const qFree = Number($("planQuota_free_100")?.value) || 100;
+            const qFree = ($("planQuota_free_100")?.value !== "" && !isNaN(Number($("planQuota_free_100")?.value))) ? Number($("planQuota_free_100")?.value) : 100;
             const qExt = Number($("planQuota_ext_400")?.value) || 400;
             const qSilver = Number($("planQuota_receipts_800")?.value) || 800;
             const qGold = Number($("planQuota_standard_1000")?.value) || 1000;
