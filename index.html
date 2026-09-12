@@ -3537,35 +3537,99 @@ input::placeholder { color: var(--text-faint); }
 
 
 
-            <!-- Mode Toggle Card -->
+            <!-- Dual Master Modes Control Card (التحكم المستقل بوضع الإضافة والإيصالات) -->
+            <div class="card" style="margin-bottom: 24px; border: 1px solid rgba(96, 165, 250, 0.35); background: rgba(15, 23, 42, 0.45); border-radius: 14px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.25);">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: rgba(15, 23, 42, 0.65); padding: 16px 20px;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 17px; display: flex; align-items: center; gap: 8px;">
+                            <span>🎛️</span> التحكم الشامل بأوضاع الإضافة والإيصالات (المجاني والمدفوع)
+                        </h3>
+                        <div style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">
+                            تحكم مستقل كامل: يمكنك قفل أو فتح الإضافة الأساسية ومنظومة الإيصالات كلاً على حدة، أو قفلهما/فتحهما معاً بنقرة واحدة.
+                        </div>
+                    </div>
+                    <span id="masterStatusBadge" style="padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35);">
+                        🟢 الوضع العام: فتح الاثنين (مجاني شامل)
+                    </span>
+                </div>
+                <div class="card-body" style="padding: 20px;">
+                    
+                    <!-- 4 Quick Presets Bar -->
+                    <div style="margin-bottom: 22px;">
+                        <div style="font-size: 12px; font-weight: bold; color: var(--text-dim); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                            <span>⚡</span> أوضاع تشغيل سريعة جاهزة (ضغطة زر واحدة):
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px;">
+                            <button type="button" id="presetBothFree" class="btn-secondary preset-btn" style="display: flex; align-items: center; gap: 8px; justify-content: center; padding: 12px; border-color: rgba(16, 185, 129, 0.4); font-size: 12px; font-weight: bold; cursor: pointer; border-radius: 8px; transition: all 0.2s;" title="فتح الإضافة والإيصالات مجاناً لكافة المستخدمين">
+                                <span style="font-size: 18px;">🟢</span>
+                                <span>فتح الاثنين (مجاني شامل)</span>
+                            </button>
+                            <button type="button" id="presetExtPaidRcFree" class="btn-secondary preset-btn" style="display: flex; align-items: center; gap: 8px; justify-content: center; padding: 12px; border-color: rgba(59, 130, 246, 0.4); font-size: 12px; font-weight: bold; cursor: pointer; border-radius: 8px; transition: all 0.2s;" title="قفل الفواتير والتحميل لغير المشتركين، وترك الإيصالات مجانية">
+                                <span style="font-size: 18px;">🔵</span>
+                                <span>قفل الإضافة + الإيصالات مجانية</span>
+                            </button>
+                            <button type="button" id="presetExtFreeRcPaid" class="btn-secondary preset-btn" style="display: flex; align-items: center; gap: 8px; justify-content: center; padding: 12px; border-color: rgba(245, 158, 11, 0.4); font-size: 12px; font-weight: bold; cursor: pointer; border-radius: 8px; transition: all 0.2s;" title="ترك الفواتير والتحميل مجاني، وقفل الإيصالات للمشتركين فقط">
+                                <span style="font-size: 18px;">🟠</span>
+                                <span>الإضافة مجانية + قفل الإيصالات</span>
+                            </button>
+                            <button type="button" id="presetBothPaid" class="btn-secondary preset-btn" style="display: flex; align-items: center; gap: 8px; justify-content: center; padding: 12px; border-color: rgba(239, 68, 68, 0.4); font-size: 12px; font-weight: bold; cursor: pointer; border-radius: 8px; transition: all 0.2s;" title="قفل الإضافة والإيصالات كلاهما، واشتراك إجباري للجميع">
+                                <span style="font-size: 18px;">🔴</span>
+                                <span>قفل الاثنين (اشتراك كامل)</span>
+                            </button>
+                        </div>
+                    </div>
 
-            <div class="mode-card" id="modeCard">
+                    <!-- The 2 Independent Dual Switches -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+                        
+                        <!-- Switch 1: Core Extension Mode -->
+                        <div id="extModeCard" style="background: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.35); border-radius: 12px; padding: 18px; display: flex; justify-content: space-between; align-items: center; gap: 14px;">
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <span id="extModeIcon" style="font-size: 36px;">🆓</span>
+                                <div>
+                                    <div style="font-size: 15px; font-weight: bold; color: var(--text);">
+                                        1️⃣ الإضافة الأساسية (الفواتير والتقارير)
+                                    </div>
+                                    <div id="extModeDesc" style="font-size: 12px; color: var(--text-dim); margin-top: 4px; line-height: 1.4;">
+                                        مفتوحة ومجانية لكافة المستخدمين بدون قيود
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span id="extModeStatusText" style="font-size: 13px; font-weight: bold; color: var(--green);">مجاني</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="modeToggle">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
 
-                <div class="mode-info">
-
-                    <div class="mode-icon" id="modeIcon">🆓</div>
-
-                    <div class="mode-text">
-
-                        <div class="mode-title" id="modeTitle">الوضع الحالي: مجاني للجميع</div>
-
-                        <div class="mode-desc" id="modeDesc">الإضافة متاحة لكل المستخدمين بدون قيود</div>
+                        <!-- Switch 2: Receipts System Mode -->
+                        <div id="rcModeCard" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 12px; padding: 18px; display: flex; justify-content: space-between; align-items: center; gap: 14px;">
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <span id="rcModeIcon" style="font-size: 36px;">🧾</span>
+                                <div>
+                                    <div style="font-size: 15px; font-weight: bold; color: var(--text);">
+                                        2️⃣ منظومة الإيصالات الإلكترونية
+                                    </div>
+                                    <div id="rcModeDesc" style="font-size: 12px; color: var(--text-dim); margin-top: 4px; line-height: 1.4;">
+                                        مفتوحة ومجانية (بحسب الحصة الشهرية)
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span id="rcModeStatusText" style="font-size: 13px; font-weight: bold; color: var(--green);">مجاني</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="receiptsModeToggle">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
 
                     </div>
 
                 </div>
-
-                <label class="toggle-switch">
-
-                    <input type="checkbox" id="modeToggle">
-
-                    <span class="toggle-slider"></span>
-
-                </label>
-
             </div>
-
-
 
             <!-- Extension Control Panel -->
 
@@ -3994,40 +4058,40 @@ input::placeholder { color: var(--text-faint); }
         <div id="page-receipts" class="page hidden">
             
             <!-- Quick Stats Cards -->
-            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-                <div class="stat-card blue">
+            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px;">
+                <div class="stat-card blue" id="rcStatCardTotal" style="cursor: pointer;" title="عرض كافة المشتركين">
                     <div class="stat-icon">🧾</div>
                     <div class="stat-info">
                         <div class="stat-num" id="rcStatTotalSubs">0</div>
-                        <div class="stat-label">إجمالي مشتركي الإيصالات</div>
+                        <div class="stat-label">إجمالي المشتركين</div>
                     </div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card" id="rcStatCardFree" style="cursor: pointer; border: 1px solid rgba(16, 185, 129, 0.3);" title="عرض عملاء الباقة المجانية">
                     <div class="stat-icon">🆓</div>
                     <div class="stat-info">
-                        <div class="stat-num" id="rcStatFree">0</div>
-                        <div class="stat-label">الباقة المجانية (Free Starter)</div>
+                        <div class="stat-num" id="rcStatFree" style="color: #34d399;">0</div>
+                        <div class="stat-label">الباقة المجانية (Free)</div>
                     </div>
                 </div>
-                <div class="stat-card cyan">
-                    <div class="stat-icon">🧩</div>
+                <div class="stat-card cyan" id="rcStatCardPaid" style="cursor: pointer;" title="عرض المشتركين في باقات مدفوعة">
+                    <div class="stat-icon">💎</div>
                     <div class="stat-info">
-                        <div class="stat-num" id="rcStatExt">0</div>
-                        <div class="stat-label">باقة الإضافة (Basic Plus)</div>
+                        <div class="stat-num" id="rcStatPaid">0</div>
+                        <div class="stat-label">باقات مدفوعة</div>
                     </div>
                 </div>
-                <div class="stat-card purple">
-                    <div class="stat-icon">🌟</div>
+                <div class="stat-card purple" id="rcStatCardCustom" style="cursor: pointer;" title="عرض أصحاب الباقات المخصصة">
+                    <div class="stat-icon">🎨</div>
                     <div class="stat-info">
-                        <div class="stat-num" id="rcStatStandard">0</div>
-                        <div class="stat-label">الباقات الفضية والذهبية (Silver & Gold)</div>
+                        <div class="stat-num" id="rcStatCustom" style="color: #c084fc;">0</div>
+                        <div class="stat-label">باقات مخصصة</div>
                     </div>
                 </div>
-                <div class="stat-card orange">
-                    <div class="stat-icon">👑</div>
+                <div class="stat-card red" id="rcStatCardExceeded" style="cursor: pointer; border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08);" title="عرض الحسابات التي تجاوزت الحد المسموح">
+                    <div class="stat-icon">⚠️</div>
                     <div class="stat-info">
-                        <div class="stat-num" id="rcStatVip">0</div>
-                        <div class="stat-label">باقة VIP البلاتينية (Platinum VIP)</div>
+                        <div class="stat-num" id="rcStatExceeded" style="color: #ef4444; font-weight: 800;">0</div>
+                        <div class="stat-label" style="color: #f87171; font-weight: bold;">تجاوزوا الحد الأقصى</div>
                     </div>
                 </div>
             </div>
@@ -4082,87 +4146,103 @@ input::placeholder { color: var(--text-faint); }
                 </div>
             </div>
 
-            <!-- The 5 Plans Overview Grid -->
-            <div class="card" style="margin-bottom: 24px;">
-                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                    <h3>🎟️ باقات وخطط اشتراك الإيصالات الإلكترونية (5 أوضاع)</h3>
-                    <span style="font-size: 12px; color: var(--text-dim);">جميع الحصص قابلة للتعديل والتخصيص لأي عميل</span>
+            <!-- The Plans Master Quota Config Grid -->
+            <div class="card" style="margin-bottom: 24px; border: 1px solid rgba(96, 165, 250, 0.25);">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: rgba(15, 23, 42, 0.4);">
+                    <div>
+                        <h3 style="display: flex; align-items: center; gap: 8px; font-size: 16px;">
+                            <span>⚙️</span> لوحة التحكم بحصص باقات الإيصالات العامة (تعديل وتعميم عدد الإيصالات لكل باقة)
+                        </h3>
+                        <div style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">
+                            يمكنك تعديل عدد الإيصالات الافتراضية الممنوحة لأي باقة، وسيتم حفظها في السيرفر وتطبيقها تلقائياً على المشتركين الجدد.
+                        </div>
+                    </div>
+                    <button type="button" id="saveAllPlanQuotasBtn" class="btn-primary" style="background: linear-gradient(135deg, #10b981, #059669); border: none; padding: 8px 20px; font-size: 13px; font-weight: bold; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+                        <span>💾</span> حفظ وتعميم حصص الباقات في السيرفر
+                    </button>
                 </div>
                 <div class="card-body">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
                         
-                        <!-- Plan 1 -->
-                        <div style="background: rgba(100, 116, 139, 0.08); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <!-- Plan 1: Free -->
+                        <div style="background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                     <span style="font-size: 28px;">🆓</span>
-                                    <span style="font-size: 11px; background: rgba(148, 163, 184, 0.2); color: #cbd5e1; padding: 2px 8px; border-radius: 10px; font-weight: bold;">الافتراضي</span>
+                                    <span style="font-size: 11px; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 2px 8px; border-radius: 10px; font-weight: bold;">الباقة المجانية</span>
                                 </div>
-                                <h4 style="margin: 0 0 6px 0; font-size: 15px; color: var(--text); font-weight: bold;">الباقة المجانية (Free Starter)</h4>
-                                <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">يقدر العميل يبعت <span id="rcFreePlanDescQuota" style="font-weight: bold; color: var(--accent);">100</span> إيصال في الشهر في الوضع المجاني (قابلة للزيادة من الإدارة).</p>
+                                <h4 style="margin: 0 0 6px 0; font-size: 15px; color: var(--text); font-weight: bold;">Free Starter</h4>
+                                <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">حصة الإيصالات المجانية الافتراضية لكل إيميل شهرياً.</p>
                             </div>
-                            <div id="rcFreePlanCardQuota" style="padding: 8px 10px; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 12px; font-weight: bold; color: var(--accent); text-align: center;">
-                                100 إيصال / شهر
+                            <div style="background: rgba(0,0,0,0.25); padding: 10px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                                <label style="font-size: 11px; color: #34d399; font-weight: bold; display: block; margin-bottom: 4px;">عدد الإيصالات / شهر:</label>
+                                <input type="number" id="planQuota_free_100" min="1" max="100000" value="100" style="width: 100%; font-weight: bold; font-size: 15px; color: #34d399; text-align: center; padding: 6px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.4); background: var(--bg);">
                             </div>
                         </div>
 
-                        <!-- Plan 2 -->
-                        <div style="background: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.25); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <!-- Plan 2: Basic Plus -->
+                        <div style="background: rgba(2, 132, 199, 0.06); border: 1px solid rgba(2, 132, 199, 0.3); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                     <span style="font-size: 28px;">🧩</span>
-                                    <span style="font-size: 11px; background: rgba(2, 132, 199, 0.2); color: #38bdf8; padding: 2px 8px; border-radius: 10px; font-weight: bold;">اشتراك الإضافة</span>
+                                    <span style="font-size: 11px; background: rgba(2, 132, 199, 0.2); color: #38bdf8; padding: 2px 8px; border-radius: 10px; font-weight: bold;">باقة الإضافة</span>
                                 </div>
-                                <h4 style="margin: 0 0 6px 0; font-size: 15px; color: var(--text); font-weight: bold;">باقة الإضافة الأساسية (Basic Plus)</h4>
-                                <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">400 إيصال في الشهر في حالة الاشتراك في الإضافة نفسها على نفس الميل (مع إمكانية تعديلها).</p>
+                                <h4 style="margin: 0 0 6px 0; font-size: 15px; color: var(--text); font-weight: bold;">Basic Plus</h4>
+                                <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">حصة الحسابات المشتركة في إضافة المنظومة الأساسية.</p>
                             </div>
-                            <div style="padding: 8px 10px; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 12px; font-weight: bold; color: #38bdf8; text-align: center;">
-                                400 إيصال / شهر
+                            <div style="background: rgba(0,0,0,0.25); padding: 10px; border-radius: 8px; border: 1px solid rgba(2, 132, 199, 0.2);">
+                                <label style="font-size: 11px; color: #38bdf8; font-weight: bold; display: block; margin-bottom: 4px;">عدد الإيصالات / شهر:</label>
+                                <input type="number" id="planQuota_ext_400" min="1" max="100000" value="400" style="width: 100%; font-weight: bold; font-size: 15px; color: #38bdf8; text-align: center; padding: 6px; border-radius: 6px; border: 1px solid rgba(2, 132, 199, 0.4); background: var(--bg);">
                             </div>
                         </div>
 
-                        <!-- Plan 3 -->
-                        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <!-- Plan 3: Silver -->
+                        <div style="background: rgba(100, 116, 139, 0.06); border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                     <span style="font-size: 28px;">🧾</span>
-                                    <span style="font-size: 11px; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 2px 8px; border-radius: 10px; font-weight: bold;">باقة الإيصالات</span>
+                                    <span style="font-size: 11px; background: rgba(100, 116, 139, 0.2); color: #cbd5e1; padding: 2px 8px; border-radius: 10px; font-weight: bold;">الباقة الفضية</span>
                                 </div>
-                                <h4 style="margin: 0 0 6px 0; font-size: 15px; color: var(--text); font-weight: bold;">باقة الإيصالات الفضية (Silver)</h4>
-                                <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">من 600 إلى 800 إيصال في الشهر على نفس الميل (مع إمكانية تعديلها لأي رقم).</p>
+                                <h4 style="margin: 0 0 6px 0; font-size: 15px; color: var(--text); font-weight: bold;">Silver Plan</h4>
+                                <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">باقة الإيصالات الفضية للأنشطة التجارية المتوسطة.</p>
                             </div>
-                            <div style="padding: 8px 10px; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 12px; font-weight: bold; color: #34d399; text-align: center;">
-                                600 - 800 إيصال / شهر
+                            <div style="background: rgba(0,0,0,0.25); padding: 10px; border-radius: 8px; border: 1px solid rgba(148, 163, 184, 0.2);">
+                                <label style="font-size: 11px; color: #cbd5e1; font-weight: bold; display: block; margin-bottom: 4px;">عدد الإيصالات / شهر:</label>
+                                <input type="number" id="planQuota_receipts_800" min="1" max="100000" value="800" style="width: 100%; font-weight: bold; font-size: 15px; color: #cbd5e1; text-align: center; padding: 6px; border-radius: 6px; border: 1px solid rgba(148, 163, 184, 0.4); background: var(--bg);">
                             </div>
                         </div>
 
-                        <!-- Plan 4 -->
-                        <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <!-- Plan 4: Gold Pro -->
+                        <div style="background: rgba(245, 158, 11, 0.06); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                     <span style="font-size: 28px;">🌟</span>
-                                    <span style="font-size: 11px; background: rgba(168, 85, 247, 0.2); color: #c084fc; padding: 2px 8px; border-radius: 10px; font-weight: bold;">الاشتراك القياسي</span>
+                                    <span style="font-size: 11px; background: rgba(245, 158, 11, 0.2); color: #fbbf24; padding: 2px 8px; border-radius: 10px; font-weight: bold;">الباقة الذهبية</span>
                                 </div>
-                                <h4 style="margin: 0 0 6px 0; font-size: 15px; color: var(--text); font-weight: bold;">الباقة الذهبية القياسية (Gold Pro)</h4>
-                                <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">من 800 إلى 1000 إيصال في الشهر على نفس الميل (مع إمكانية تعديلها لأي رقم).</p>
+                                <h4 style="margin: 0 0 6px 0; font-size: 15px; color: var(--text); font-weight: bold;">Gold Pro</h4>
+                                <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">الاشتراك القياسي للأعمال ذات الكثافة العالية.</p>
                             </div>
-                            <div style="padding: 8px 10px; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 12px; font-weight: bold; color: #c084fc; text-align: center;">
-                                800 - 1000 إيصال / شهر
+                            <div style="background: rgba(0,0,0,0.25); padding: 10px; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                                <label style="font-size: 11px; color: #fbbf24; font-weight: bold; display: block; margin-bottom: 4px;">عدد الإيصالات / شهر:</label>
+                                <input type="number" id="planQuota_standard_1000" min="1" max="100000" value="1000" style="width: 100%; font-weight: bold; font-size: 15px; color: #fbbf24; text-align: center; padding: 6px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.4); background: var(--bg);">
                             </div>
                         </div>
 
-                        <!-- Plan 5 -->
-                        <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+                        <!-- Plan 5: VIP Platinum -->
+                        <div style="background: rgba(139, 92, 246, 0.06); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                                     <span style="font-size: 28px;">👑</span>
-                                    <span style="font-size: 11px; background: rgba(245, 158, 11, 0.2); color: #fbbf24; padding: 2px 8px; border-radius: 10px; font-weight: bold;">الباقة المتقدمة</span>
+                                    <span style="font-size: 11px; background: rgba(139, 92, 246, 0.2); color: #c084fc; padding: 2px 8px; border-radius: 10px; font-weight: bold;">باقة VIP البلاتينية</span>
                                 </div>
-                                <h4 style="margin: 0 0 6px 0; font-size: 15px; color: var(--text); font-weight: bold;">باقة VIP البلاتينية (Platinum VIP)</h4>
-                                <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">أعلى من 1000 إيصال + إمكانية ربط إيميل ثاني بحصة 500 إيصال (مع إمكانية التعديل).</p>
+                                <h4 style="margin: 0 0 6px 0; font-size: 15px; color: var(--text); font-weight: bold;">Platinum VIP</h4>
+                                <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-dim); line-height: 1.5;">الباقة المتقدمة مع إمكانية ربط إيميل إضافي ثانٍ.</p>
                             </div>
-                            <div style="padding: 8px 10px; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 12px; font-weight: bold; color: #fbbf24; text-align: center;">
-                                > 1000 + 500 إضافي
+                            <div style="background: rgba(0,0,0,0.25); padding: 10px; border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                                <label style="font-size: 11px; color: #c084fc; font-weight: bold; display: block; margin-bottom: 4px;">حصة الحساب الرئيسي:</label>
+                                <input type="number" id="planQuota_enterprise_vip" min="1" max="100000" value="1500" style="width: 100%; font-weight: bold; font-size: 14px; color: #c084fc; text-align: center; padding: 5px; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.4); background: var(--bg); margin-bottom: 6px;">
+                                <label style="font-size: 11px; color: #fbbf24; font-weight: bold; display: block; margin-bottom: 4px;">حصة الإيميل الثاني:</label>
+                                <input type="number" id="planQuota_enterprise_vip_sec" min="1" max="50000" value="500" style="width: 100%; font-weight: bold; font-size: 13px; color: #fbbf24; text-align: center; padding: 4px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.4); background: var(--bg);">
                             </div>
                         </div>
 
@@ -4190,36 +4270,38 @@ input::placeholder { color: var(--text-faint); }
                             <div class="form-group">
                                 <label>🎟️ نوع باقة الإيصالات</label>
                                 <select id="rcSubPlanId" class="filter-select" style="width: 100%;">
-                                    <option value="free_100">🆓 الباقة المجانية - Free Starter (100 إيصال/شهر)</option>
-                                    <option value="ext_400">🧩 باقة الإضافة الأساسية - Basic Plus (400 إيصال/شهر)</option>
-                                    <option value="receipts_800">🧾 باقة الإيصالات الفضية - Silver (600 - 800 إيصال/شهر)</option>
-                                    <option value="standard_1000">🌟 الباقة الذهبية القياسية - Gold Pro (800 - 1000 إيصال/شهر)</option>
+                                    <option value="free_100">🆓 الباقة المجانية - Free Starter</option>
+                                    <option value="ext_400">🧩 باقة الإضافة الأساسية - Basic Plus</option>
+                                    <option value="receipts_800">🧾 باقة الإيصالات الفضية - Silver</option>
+                                    <option value="standard_1000">🌟 الباقة الذهبية القياسية - Gold Pro</option>
                                     <option value="enterprise_vip">👑 باقة VIP البلاتينية - Platinum VIP (>1000 + إيميل ثاني)</option>
+                                    <option value="custom_quota" style="color: #c084fc; font-weight: bold;">🎨 باقة مخصصة - Custom Quota (تحديد الحصة يدوياً لأي رقم)</option>
                                 </select>
                             </div>
 
                             <!-- Custom Monthly Quota -->
                             <div class="form-group">
-                                <label>📊 حصة الإيصالات الشهرية (قابلة للتعديل لأي رقم)</label>
+                                <label>📊 حصة الإيصالات الشهرية (يمكنك كتابة أي رقم مخصص للعميل)</label>
                                 <input type="number" id="rcSubQuota" min="1" max="100000" value="100" required>
                             </div>
 
                         </div>
 
-                        <!-- Secondary Email Linking Box (Plan 5 VIP Feature) -->
-                        <div id="rcSecondaryContainer" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 12px; padding: 16px; margin-bottom: 16px; display: none;">
-                            <div style="font-weight: bold; font-size: 13px; color: #fbbf24; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                                <span>👑</span> ميزة ربط إيميل إضافي ثاني بحصة مخصصة (الوضع الخامس):
+                        <!-- Dynamic Multi-Email Linking Box (VIP or Custom Multi-Cashier Accounts) -->
+                        <div id="rcSecondaryContainer" style="background: rgba(245, 158, 11, 0.07); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 18px; margin-bottom: 18px; display: none;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                                <div style="font-weight: bold; font-size: 14px; color: #fbbf24; display: flex; align-items: center; gap: 8px;">
+                                    <span>👑</span> ربط إيميلات إضافية (فروع / كاشيرات) لنفس العميل (1 أو 2 أو 3 أو 4 أو أكثر):
+                                </div>
+                                <button type="button" id="rcAddLinkedEmailBtn" class="btn-secondary" style="border-color: rgba(245, 158, 11, 0.5); color: #fbbf24; font-size: 12px; font-weight: bold; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                    <span>➕</span> إضافة إيميل كاشير / فرع إضافي
+                                </button>
                             </div>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label>البريد الإلكتروني الثاني المرتبط</label>
-                                    <input type="email" id="rcSecEmail" placeholder="secondary-user@company.com">
-                                </div>
-                                <div class="form-group" style="margin-bottom: 0;">
-                                    <label>حصة الإيميل الثاني شهرياً (الافتراضي 500 إيصال مع إمكانية التغيير)</label>
-                                    <input type="number" id="rcSecQuota" min="1" max="50000" value="500">
-                                </div>
+                            <div style="font-size: 12px; color: var(--text-dim); margin-bottom: 12px; line-height: 1.5;">
+                                يمكنك إضافة أي عدد من الإيميلات التابعة لنفس المنشأة (كاشير 1، كاشير 2، كاشير 3...) مع تحديد حصة إيصالات مخصصة لكل إيميل شهرياً (الافتراضي 500).
+                            </div>
+                            <div id="rcLinkedEmailsRows" style="display: flex; flex-direction: column; gap: 10px;">
+                                <!-- Dynamic linked email rows will be injected here -->
                             </div>
                         </div>
 
@@ -4241,19 +4323,48 @@ input::placeholder { color: var(--text-faint); }
             <!-- Subscribers Receipts Management Table -->
             <div class="card">
                 <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-                    <h3>👥 سجل وإدارة اشتراكات الإيصالات للعملاء</h3>
+                    <div>
+                        <h3 style="margin: 0; font-size: 16px;">👥 سجل وإدارة اشتراكات الإيصالات للعملاء</h3>
+                        <div style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">
+                            متابعة الحصص الشهرية، الاستهلاك الفعلي، والرصيد المتبقي بدقة متناهية
+                        </div>
+                    </div>
                     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                        <input type="text" id="rcTableSearch" placeholder="بحث بالإيميل أو الاسم..." class="search-input" style="padding: 8px 14px; width: 220px;">
+                        <input type="text" id="rcTableSearch" placeholder="بحث بالإيميل أو الاسم..." class="search-input" style="padding: 8px 14px; width: 200px;">
+                        
+                        <!-- Plan Filter -->
                         <select id="rcTablePlanFilter" class="filter-select">
-                            <option value="">جميع الباقات</option>
-                            <option value="free_100">🆓 الباقة المجانية (Free Starter)</option>
-                            <option value="ext_400">🧩 باقة الإضافة الأساسية (Basic Plus)</option>
-                            <option value="receipts_800">🧾 باقة الإيصالات الفضية (Silver)</option>
-                            <option value="standard_1000">🌟 الباقة الذهبية القياسية (Gold Pro)</option>
-                            <option value="enterprise_vip">👑 باقة VIP البلاتينية (Platinum VIP)</option>
+                            <option value="">-- كافة الباقات --</option>
+                            <option value="free_100">🆓 الباقة المجانية فقط</option>
+                            <option value="paid_all">💎 المشتركون في باقات مدفوعة</option>
+                            <option value="custom_quota">🎨 أصحاب الباقات المخصصة</option>
+                            <option value="ext_400">🧩 باقة Basic Plus</option>
+                            <option value="receipts_800">🧾 باقة Silver</option>
+                            <option value="standard_1000">🌟 باقة Gold Pro</option>
+                            <option value="enterprise_vip">👑 باقة Platinum VIP</option>
                         </select>
+
+                        <!-- Exceeded / Quota Status Filter -->
+                        <select id="rcTableStatusFilter" class="filter-select" style="border-color: rgba(239, 68, 68, 0.4);">
+                            <option value="">-- حالة الاستهلاك --</option>
+                            <option value="exceeded_all" style="color: #ef4444; font-weight: bold;">⚠️ تجاوزوا الحد (الكل)</option>
+                            <option value="exceeded_free" style="color: #ef4444; font-weight: bold;">⚠️ تجاوزوا الباقة المجانية</option>
+                            <option value="exceeded_paid" style="color: #ef4444; font-weight: bold;">⚠️ تجاوزوا الباقات المدفوعة</option>
+                            <option value="active" style="color: #10b981; font-weight: bold;">✓ نشط (يوجد رصيد متبقي)</option>
+                        </select>
+
                         <button id="rcRefreshTableBtn" class="btn-secondary" style="padding: 8px 12px;">🔄 تحديث</button>
                     </div>
+                </div>
+
+                <!-- Quick Filter Action Badges Bar -->
+                <div style="padding: 10px 16px; background: rgba(0,0,0,0.15); border-bottom: 1px solid var(--card-border); display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <span style="font-size: 12px; color: var(--text-dim); margin-left: 6px;">تصفية سريعة:</span>
+                    <button type="button" class="btn-secondary" id="rcQuickAllBtn" style="padding: 4px 10px; font-size: 11px; border-radius: 6px;">عرض الكل</button>
+                    <button type="button" class="btn-secondary" id="rcQuickFreeBtn" style="padding: 4px 10px; font-size: 11px; border-radius: 6px; border-color: rgba(16, 185, 129, 0.4); color: #34d399;">🆓 الباقة المجانية</button>
+                    <button type="button" class="btn-secondary" id="rcQuickPaidBtn" style="padding: 4px 10px; font-size: 11px; border-radius: 6px; border-color: rgba(59, 130, 246, 0.4); color: #60a5fa;">💎 باقات مدفوعة</button>
+                    <button type="button" class="btn-secondary" id="rcQuickCustomBtn" style="padding: 4px 10px; font-size: 11px; border-radius: 6px; border-color: rgba(168, 85, 247, 0.4); color: #c084fc;">🎨 باقات مخصصة</button>
+                    <button type="button" class="btn-secondary" id="rcQuickExceededBtn" style="padding: 4px 10px; font-size: 11px; border-radius: 6px; border-color: rgba(239, 68, 68, 0.5); color: #ef4444; font-weight: bold;">⚠️ تجاوزوا الحد فقط</button>
                 </div>
                 <div class="card-body" style="padding: 0; overflow-x: auto;">
                     <table class="data-table">
@@ -7595,254 +7706,233 @@ async function updateModeUI() {
 
 
 
-function renderModeUI(isPaid, settings) {
-
-    const card   = document.getElementById("modeCard");
-
-    const toggle = document.getElementById("modeToggle");
-
-    const icon   = document.getElementById("modeIcon");
-
-    const title  = document.getElementById("modeTitle");
-
-    const desc   = document.getElementById("modeDesc");
-
-    const badge  = document.getElementById("systemStatus");
-
-
-
-    if (!card) return;
-
-
-
-    if (isPaid) {
-
-        card.classList.add("paid-mode");
-
-        toggle.checked    = true;
-
-        icon.textContent  = "🔒";
-
-        title.textContent = "الوضع الحالي: اشتراك مفعّل";
-
-        desc.textContent  = "الإضافة تعمل فقط للمشتركين المسجلين لديك";
-
-    } else {
-
-        card.classList.remove("paid-mode");
-
-        toggle.checked    = false;
-
-        icon.textContent  = "🆓";
-
-        title.textContent = "الوضع الحالي: مجاني للجميع";
-
-        desc.textContent  = "الإضافة متاحة لكل المستخدمين بدون قيود";
-
-    }
-
-
-
-    if (badge) {
-
-        badge.className   = "status-badge " + (isPaid ? "paid-badge" : "free-badge");
-
-        badge.textContent = isPaid ? "🔒 وضع الاشتراك" : "🆓 وضع مجاني";
-
-    }
-
-
-
-    if (settings) {
-
-        if ($("noticeMessage"))  $("noticeMessage").value  = settings.noticeMessage  || "";
-
-        if ($("maintenanceMode")) $("maintenanceMode").checked = !!settings.maintenanceMode;
-
-        if ($("extVersion")) $("extVersion").value = settings.version || "";
-
-        if ($("extVersionNotes")) $("extVersionNotes").value = settings.versionNotes || "";
-
-        if (settings && settings.features) globalFeatures = settings.features;
-
-        buildGlobalFeaturesUI();
-
-    }
-
-}
-
-
-
-async function saveConfig() {
-
-    const noticeMessage = $("noticeMessage").value.trim();
-
-    const maintenanceMode = $("maintenanceMode").checked;
-
-    const version = $("extVersion") ? $("extVersion").value.trim() : "";
-
-    const versionNotes = $("extVersionNotes") ? $("extVersionNotes").value.trim() : "";
-
-
-
-    try {
-
-        await apiFetch("/api/settings/config", {
-
-            method: 'POST',
-
-            body: JSON.stringify({ noticeMessage, maintenanceMode, version, versionNotes })
-
-        });
-
-
-
-        // Force background to pick up the new config immediately from server.
-
-        fetch("/api/invalidate-cache", { method: "POST" }).catch(() => {});
-
-        if (typeof chrome !== "undefined" && chrome.runtime) {
-
-            chrome.runtime.sendMessage(OFFICIAL_EXTENSION_ID, { action: "forceConfigRefresh" }, () => {
-
-                if (chrome.runtime.lastError) { /* ignore */ }
-
-            });
-
+function renderModeUI(isExtPaid, settings) {
+    const extToggle = document.getElementById("modeToggle");
+    const rcToggle  = document.getElementById("receiptsModeToggle");
+    const extIcon   = document.getElementById("extModeIcon");
+    const extDesc   = document.getElementById("extModeDesc");
+    const extText   = document.getElementById("extModeStatusText");
+    const extCard   = document.getElementById("extModeCard");
+
+    const rcIcon   = document.getElementById("rcModeIcon");
+    const rcDesc   = document.getElementById("rcModeDesc");
+    const rcText   = document.getElementById("rcModeStatusText");
+    const rcCard   = document.getElementById("rcModeCard");
+    const masterBadge = document.getElementById("masterStatusBadge");
+    const sysBadge = document.getElementById("systemStatus");
+
+    // Determine Receipts Mode from settings features
+    let isRcPaid = false;
+    if (settings && settings.features) {
+        if (settings.features.receiptsMode) {
+            isRcPaid = (settings.features.receiptsMode === "paid");
+        } else if (settings.features.allowUnsubscribedReceipts) {
+            isRcPaid = (settings.features.allowUnsubscribedReceipts.enabled === false);
         }
-
-        window.postMessage({ type: "ETA_FORCE_REFRESH" }, "*");
-
-        
-
-        showToast("تم حفظ إعدادات الإضافة بنجاح ✅");
-
-        addLogEntry("settings", "تم تحديث إعدادات الإضافة");
-
-    } catch (err) {
-
-        showToast(err.message, "err");
-
+    } else if (rcToggle) {
+        isRcPaid = rcToggle.checked;
     }
 
-}
+    // 1. Update Core Extension Switch UI
+    if (extToggle) extToggle.checked = !!isExtPaid;
+    if (extIcon) extIcon.textContent = isExtPaid ? "🔒" : "🆓";
+    if (extDesc) extDesc.textContent = isExtPaid ? "وضع اشتراك: الفواتير والتحميل والتقارير مقفلة لغير المشتركين" : "مفتوحة ومجانية لكافة المستخدمين بدون قيود";
+    if (extText) {
+        extText.textContent = isExtPaid ? "🔒 اشتراك" : "🆓 مجاني";
+        extText.style.color = isExtPaid ? "var(--purple)" : "var(--green)";
+    }
+    if (extCard) {
+        extCard.style.borderColor = isExtPaid ? "rgba(168, 85, 247, 0.4)" : "rgba(2, 132, 199, 0.35)";
+        extCard.style.background = isExtPaid ? "rgba(168, 85, 247, 0.08)" : "rgba(2, 132, 199, 0.08)";
+    }
 
+    // 2. Update Receipts Switch UI
+    if (rcToggle) rcToggle.checked = !!isRcPaid;
+    if (rcIcon) rcIcon.textContent = isRcPaid ? "🔒" : "🧾";
+    if (rcDesc) rcDesc.textContent = isRcPaid ? "وضع اشتراك: الإيصالات مقفلة وتتطلب اشتراكاً مدفوعاً في باقة" : "مفتوحة ومجانية (بحسب الحصة الشهرية المحددة)";
+    if (rcText) {
+        rcText.textContent = isRcPaid ? "🔒 اشتراك" : "🆓 مجاني";
+        rcText.style.color = isRcPaid ? "var(--purple)" : "var(--green)";
+    }
+    if (rcCard) {
+        rcCard.style.borderColor = isRcPaid ? "rgba(239, 68, 68, 0.4)" : "rgba(16, 185, 129, 0.35)";
+        rcCard.style.background = isRcPaid ? "rgba(239, 68, 68, 0.06)" : "rgba(16, 185, 129, 0.08)";
+    }
 
+    // 3. Update Master Badge & Presets Highlight
+    if (masterBadge) {
+        if (!isExtPaid && !isRcPaid) {
+            masterBadge.innerHTML = "🟢 الوضع العام: فتح الاثنين (مجاني شامل)";
+            masterBadge.style.color = "#34d399";
+            masterBadge.style.background = "rgba(16, 185, 129, 0.2)";
+            masterBadge.style.borderColor = "rgba(16, 185, 129, 0.4)";
+        } else if (isExtPaid && !isRcPaid) {
+            masterBadge.innerHTML = "🔵 الوضع العام: قفل الإضافة + الإيصالات مجانية";
+            masterBadge.style.color = "#60a5fa";
+            masterBadge.style.background = "rgba(59, 130, 246, 0.2)";
+            masterBadge.style.borderColor = "rgba(59, 130, 246, 0.4)";
+        } else if (!isExtPaid && isRcPaid) {
+            masterBadge.innerHTML = "🟠 الوضع العام: الإضافة مجانية + قفل الإيصالات";
+            masterBadge.style.color = "#fbbf24";
+            masterBadge.style.background = "rgba(245, 158, 11, 0.2)";
+            masterBadge.style.borderColor = "rgba(245, 158, 11, 0.4)";
+        } else {
+            masterBadge.innerHTML = "🔴 الوضع العام: قفل الاثنين (اشتراك كامل)";
+            masterBadge.style.color = "#f87171";
+            masterBadge.style.background = "rgba(239, 68, 68, 0.2)";
+            masterBadge.style.borderColor = "rgba(239, 68, 68, 0.4)";
+        }
+    }
 
-let currentLocalMode = null;
+    // Highlight active preset button
+    document.querySelectorAll(".preset-btn").forEach(b => {
+        b.style.boxShadow = "none";
+        b.style.transform = "none";
+        b.style.background = "var(--bg-card)";
+    });
+    let activePresetId = "";
+    if (!isExtPaid && !isRcPaid) activePresetId = "presetBothFree";
+    else if (isExtPaid && !isRcPaid) activePresetId = "presetExtPaidRcFree";
+    else if (!isExtPaid && isRcPaid) activePresetId = "presetExtFreeRcPaid";
+    else if (isExtPaid && isRcPaid) activePresetId = "presetBothPaid";
+    
+    if (activePresetId && $(activePresetId)) {
+        $(activePresetId).style.boxShadow = "0 0 14px rgba(255,255,255,0.25)";
+        $(activePresetId).style.transform = "translateY(-2px)";
+        $(activePresetId).style.background = "rgba(255,255,255,0.08)";
+    }
 
-
-
-async function toggleMode() {
-
-    const isPaid = $("modeToggle").checked;
-
-    const newMode = isPaid ? "paid" : "free";
-
-    currentLocalMode = newMode;
-
-
-
-    // 1. Instant UI update & Toast feedback (< 1ms zero latency)
-
-    renderModeUI(isPaid, null);
-    if (typeof applyAutoReceiptPlanLogic === "function") applyAutoReceiptPlanLogic(false);
-
-
+    if (sysBadge) {
+        sysBadge.className = "status-badge " + (isExtPaid ? "paid-badge" : "free-badge");
+        sysBadge.textContent = isExtPaid ? "🔒 إضافة: اشتراك" : "🆓 إضافة: مجاني";
+    }
 
     const serverModeEl = $("serverModeDisplay");
-
     if (serverModeEl) {
-
-        serverModeEl.textContent = isPaid ? "🔒 اشتراك" : "🆓 مجاني";
-
-        serverModeEl.style.color = isPaid ? "var(--purple)" : "var(--green)";
-
+        serverModeEl.textContent = isExtPaid ? "🔒 اشتراك" : "🆓 مجاني";
+        serverModeEl.style.color = isExtPaid ? "var(--purple)" : "var(--green)";
     }
 
-    const syncStatusEl = $("syncStatus");
-
-    if (syncStatusEl) {
-
-        syncStatusEl.textContent = "✅ متطابق";
-
-        syncStatusEl.style.color = "var(--green)";
-
+    if (settings) {
+        if ($("noticeMessage"))  $("noticeMessage").value  = settings.noticeMessage  || "";
+        if ($("maintenanceMode")) $("maintenanceMode").checked = !!settings.maintenanceMode;
+        if ($("extVersion")) $("extVersion").value = settings.version || "";
+        if ($("extVersionNotes")) $("extVersionNotes").value = settings.versionNotes || "";
+        if (settings && settings.features) globalFeatures = settings.features;
+        buildGlobalFeaturesUI();
     }
-
-
-
-    showToast(isPaid ? "🔒 تم التحويل إلى وضع الاشتراك بنجاح ✅" : "🆓 تم التحويل إلى الوضع المجاني بنجاح ✅");
-
-
-
-    // 2. Immediate local cache update for chrome storage
-
-    try {
-
-        if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
-
-            chrome.storage.local.get(["eta_dynamic_config"], (result) => {
-
-                const cached = (result && result.eta_dynamic_config) || {};
-
-                cached.mode = newMode;
-
-                chrome.storage.local.set({ eta_dynamic_config: cached });
-
-            });
-
-        }
-
-    } catch (e) {}
-
-
-
-    // 3. Fire-and-forget background server sync
-
-    (async () => {
-
-        try {
-
-            await sbPatch("/rest/v1/settings?id=eq.1", { mode: newMode });
-
-
-
-            // Invalidate caches instantly across worker and background scripts
-
-            fetch("/api/invalidate-cache", { method: "POST" }).catch(() => {});
-
-            fetch("/api/invalidate-subscriptions", { method: "POST" }).catch(() => {});
-
-
-
-            if (typeof chrome !== "undefined" && chrome.runtime) {
-
-                chrome.runtime.sendMessage(OFFICIAL_EXTENSION_ID, { action: "forceConfigRefresh" }, () => {
-
-                    if (chrome.runtime.lastError) {}
-
-                });
-
-            }
-
-            window.postMessage({ type: "ETA_FORCE_REFRESH" }, "*");
-
-
-
-            addLogEntry("settings", `تم تغيير الوضع إلى <strong>${isPaid ? "اشتراك مفعّل" : "مجاني للجميع"}</strong>`);
-
-        } catch(e) {
-
-            console.error("[Dashboard] Mode save background log:", e.message);
-
-        }
-
-    })();
-
 }
 
+async function saveDualMasterModes(isExtPaid, isRcPaid) {
+    const extMode = isExtPaid ? "paid" : "free";
+    const rcMode = isRcPaid ? "paid" : "free";
+    currentLocalMode = extMode;
 
+    renderModeUI(isExtPaid, {
+        features: {
+            receiptsMode: rcMode,
+            allowUnsubscribedReceipts: { enabled: !isRcPaid }
+        }
+    });
+
+    let toastMsg = "";
+    if (!isExtPaid && !isRcPaid) toastMsg = "🟢 تم فتح الاثنين: الإضافة والإيصالات مجانية للجميع ✅";
+    else if (isExtPaid && !isRcPaid) toastMsg = "🔵 تم قفل الإضافة (اشتراك) وترك الإيصالات مجانية ✅";
+    else if (!isExtPaid && isRcPaid) toastMsg = "🟠 تم ترك الإضافة مجانية وقفل الإيصالات للمشتركين فقط ✅";
+    else toastMsg = "🔴 تم قفل الاثنين: الإضافة والإيصالات تتطلبان اشتراكاً كاملاً 🔒";
+    
+    showToast(toastMsg, "ok");
+
+    // Background server save to Supabase
+    try {
+        let sRows = await sbGet("/rest/v1/settings?id=eq.1&select=features");
+        let currFeatures = (sRows && sRows[0] && sRows[0].features) || {};
+        currFeatures.receiptsMode = rcMode;
+        currFeatures.allowUnsubscribedReceipts = { enabled: !isRcPaid };
+
+        try {
+            await sbRpc("admin_update_global_features", {
+                p_features: currFeatures,
+                p_password: getAdminPassword()
+            });
+        } catch(rpcErr) {
+            await sbPatch("/rest/v1/settings?id=eq.1", { features: currFeatures });
+        }
+
+        await sbPatch("/rest/v1/settings?id=eq.1", { 
+            mode: extMode,
+            features: currFeatures
+        });
+
+        // Broadcast to extension
+        try {
+            if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+                chrome.storage.local.get(["eta_dynamic_config"], (result) => {
+                    const cached = (result && result.eta_dynamic_config) || {};
+                    cached.mode = extMode;
+                    cached.receiptsMode = rcMode;
+                    cached.allowUnsubscribedReceipts = { enabled: !isRcPaid };
+                    chrome.storage.local.set({ eta_dynamic_config: cached });
+                });
+            }
+            if (typeof chrome !== "undefined" && chrome.runtime) {
+                chrome.runtime.sendMessage(OFFICIAL_EXTENSION_ID, { action: "forceConfigRefresh" }, () => {});
+            }
+            window.postMessage({ type: "ETA_FORCE_REFRESH" }, "*");
+        } catch(e) {}
+
+        addLogEntry("settings", `تم تحديث الأوضاع إلى: <strong>الإضافة: ${isExtPaid ? "اشتراك" : "مجاني"} | الإيصالات: ${isRcPaid ? "اشتراك" : "مجاني"}</strong>`);
+    } catch(err) {
+        console.error("[Dashboard] Dual mode save error:", err);
+        showToast("حدث خطأ أثناء حفظ الأوضاع في السيرفر: " + err.message, "err");
+    }
+}
+
+async function toggleMode() {
+    const isExtPaid = $("modeToggle") ? $("modeToggle").checked : false;
+    const isRcPaid  = $("receiptsModeToggle") ? $("receiptsModeToggle").checked : false;
+    await saveDualMasterModes(isExtPaid, isRcPaid);
+}
+
+// Preset Buttons & Toggles Event Listeners Initialization
+function initDualModesListeners() {
+    $("modeToggle")?.addEventListener("change", () => {
+        const isExtPaid = $("modeToggle").checked;
+        const isRcPaid  = $("receiptsModeToggle") ? $("receiptsModeToggle").checked : false;
+        saveDualMasterModes(isExtPaid, isRcPaid);
+    });
+
+    $("receiptsModeToggle")?.addEventListener("change", () => {
+        const isExtPaid = $("modeToggle") ? $("modeToggle").checked : false;
+        const isRcPaid  = $("receiptsModeToggle").checked;
+        saveDualMasterModes(isExtPaid, isRcPaid);
+    });
+
+    $("presetBothFree")?.addEventListener("click", () => saveDualMasterModes(false, false));
+    $("presetExtPaidRcFree")?.addEventListener("click", () => saveDualMasterModes(true, false));
+    $("presetExtFreeRcPaid")?.addEventListener("click", () => saveDualMasterModes(false, true));
+    $("presetBothPaid")?.addEventListener("click", () => saveDualMasterModes(true, true));
+}
+
+document.addEventListener("DOMContentLoaded", initDualModesListeners);
+try { initDualModesListeners(); } catch(e) {}
+
+async function saveConfig() {
+    const noticeMessage = $("noticeMessage").value.trim();
+    const maintenanceMode = $("maintenanceMode").checked;
+    const version = $("extVersion") ? $("extVersion").value.trim() : "";
+    const versionNotes = $("extVersionNotes") ? $("extVersionNotes").value.trim() : "";
+
+    try {
+        await apiFetch("/api/settings/config", {
+            method: "POST",
+            body: JSON.stringify({ noticeMessage, maintenanceMode, version, versionNotes })
+        });
+        showToast("✓ تم حفظ الإعدادات بنجاح!", "ok");
+    } catch (err) {
+        showToast("حدث خطأ أثناء حفظ الإعدادات: " + err.message, "err");
+    }
+}
 
 async function changePassword() {
 
@@ -9675,8 +9765,8 @@ const RC_PLANS = {
         id: "free_100",
         name: "الباقة المجانية (Free Starter)",
         defaultQuota: 100,
-        badgeBg: "rgba(148, 163, 184, 0.2)",
-        badgeColor: "#cbd5e1",
+        badgeBg: "rgba(16, 185, 129, 0.15)",
+        badgeColor: "#34d399",
         icon: "🆓",
         allowSecondary: false
     },
@@ -9684,7 +9774,7 @@ const RC_PLANS = {
         id: "ext_400",
         name: "باقة الإضافة الأساسية (Basic Plus)",
         defaultQuota: 400,
-        badgeBg: "rgba(2, 132, 199, 0.2)",
+        badgeBg: "rgba(2, 132, 199, 0.15)",
         badgeColor: "#38bdf8",
         icon: "🧩",
         allowSecondary: false
@@ -9693,10 +9783,8 @@ const RC_PLANS = {
         id: "receipts_800",
         name: "باقة الإيصالات الفضية (Silver)",
         defaultQuota: 800,
-        minRange: 600,
-        maxRange: 800,
-        badgeBg: "rgba(16, 185, 129, 0.2)",
-        badgeColor: "#34d399",
+        badgeBg: "rgba(100, 116, 139, 0.15)",
+        badgeColor: "#cbd5e1",
         icon: "🧾",
         allowSecondary: false
     },
@@ -9704,10 +9792,8 @@ const RC_PLANS = {
         id: "standard_1000",
         name: "الباقة الذهبية القياسية (Gold Pro)",
         defaultQuota: 1000,
-        minRange: 800,
-        maxRange: 1000,
-        badgeBg: "rgba(168, 85, 247, 0.2)",
-        badgeColor: "#c084fc",
+        badgeBg: "rgba(245, 158, 11, 0.15)",
+        badgeColor: "#fbbf24",
         icon: "🌟",
         allowSecondary: false
     },
@@ -9715,11 +9801,20 @@ const RC_PLANS = {
         id: "enterprise_vip",
         name: "باقة VIP البلاتينية (Platinum VIP)",
         defaultQuota: 1500,
-        badgeBg: "rgba(245, 158, 11, 0.2)",
-        badgeColor: "#fbbf24",
+        badgeBg: "rgba(139, 92, 246, 0.15)",
+        badgeColor: "#c084fc",
         icon: "👑",
         allowSecondary: true,
         defaultSecondaryQuota: 500
+    },
+    custom_quota: {
+        id: "custom_quota",
+        name: "باقة مخصصة (Custom Plan)",
+        defaultQuota: 500,
+        badgeBg: "rgba(168, 85, 247, 0.15)",
+        badgeColor: "#c084fc",
+        icon: "🎨",
+        allowSecondary: false
     }
 };
 
@@ -9727,8 +9822,61 @@ let cachedReceiptSubscribers = [];
 
 async function loadReceiptsPage() {
     try {
+        // 1. Fetch subscribers from Supabase
         const subs = cachedSubscribers || await apiFetch("/api/subscribers");
-        cachedReceiptSubscribers = Array.isArray(subs) ? subs : [];
+        cachedReceiptSubscribers = Array.isArray(subs) ? [...subs] : [];
+
+        // 2. Fetch live counter records from eta_records to merge real-time consumption
+        try {
+            const counterRows = await sbGet("/rest/v1/eta_records?store=eq.receipt_counters&select=*");
+            if (Array.isArray(counterRows) && counterRows.length > 0) {
+                counterRows.forEach(crow => {
+                    if (!crow || !crow.data || !crow.data.email) return;
+                    const cEmail = crow.data.email.toLowerCase().trim();
+                    let existing = cachedReceiptSubscribers.find(s => s.email && s.email.toLowerCase().trim() === cEmail);
+                    if (existing) {
+                        if (!existing.features) existing.features = {};
+                        if (!existing.features.receiptSubscription) {
+                            existing.features.receiptSubscription = {
+                                planId: crow.data.planId || "free_100",
+                                quotaLimit: crow.data.quotaLimit || 100,
+                                monthSent: crow.data.monthSent || 0,
+                                totalSent: crow.data.totalSent || 0
+                            };
+                        } else {
+                            existing.features.receiptSubscription.monthSent = Math.max(
+                                existing.features.receiptSubscription.monthSent || 0,
+                                crow.data.monthSent || 0
+                            );
+                            existing.features.receiptSubscription.totalSent = Math.max(
+                                existing.features.receiptSubscription.totalSent || 0,
+                                crow.data.totalSent || 0
+                            );
+                        }
+                    } else {
+                        // User used the extension but hasn't been added to subscribers table manually -> add them dynamically!
+                        cachedReceiptSubscribers.push({
+                            email: cEmail,
+                            name: crow.data.taxpayerName || "مستخدم إضافة",
+                            status: "active",
+                            startDate: new Date().toISOString().split("T")[0],
+                            endDate: "unlimited",
+                            features: {
+                                receiptSubscription: {
+                                    planId: crow.data.planId || "free_100",
+                                    subscriptionPlan: crow.data.subscriptionPlan || "الباقة المجانية",
+                                    quotaLimit: crow.data.quotaLimit || window.customFreeReceiptQuota || 100,
+                                    monthSent: crow.data.monthSent || 0,
+                                    totalSent: crow.data.totalSent || 0
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        } catch(cErr) {
+            console.warn("[Receipts] Live counters sync notice:", cErr);
+        }
         
         // Populate Datalist
         const dl = $("rcSubscribersDatalist");
@@ -9736,15 +9884,12 @@ async function loadReceiptsPage() {
             dl.innerHTML = cachedReceiptSubscribers.map(s => `<option value="${s.email}">${s.name && s.name !== '—' ? s.name + ' (' + s.email + ')' : s.email}</option>`).join('');
         }
 
-        renderReceiptsStats();
-        renderReceiptsTable();
-        initReceiptsEventListeners();
-
-        // Update allowUnsubReceiptsToggle & freeModeQuota state
+        // 3. Load Master Plan Quotas & Settings from Supabase
         try {
             const stRows = await sbGet("/rest/v1/settings?id=eq.1&select=features");
             const stFeatures = (stRows && stRows[0] && stRows[0].features) || {};
             
+            // Check unsubscribed toggle
             const isAllowed = (stFeatures.allowUnsubscribedReceipts?.enabled !== false);
             if ($("allowUnsubReceiptsToggle")) $("allowUnsubReceiptsToggle").checked = isAllowed;
             const statusText = $("allowUnsubReceiptsStatusText");
@@ -9753,19 +9898,39 @@ async function loadReceiptsPage() {
                 statusText.style.color = isAllowed ? "var(--green)" : "var(--red)";
             }
 
-            if (stFeatures.freeReceiptQuota && Number(stFeatures.freeReceiptQuota) > 0) {
-                window.customFreeReceiptQuota = Number(stFeatures.freeReceiptQuota);
-            } else {
-                window.customFreeReceiptQuota = 100;
+            // Load Master Plan Quotas
+            if (stFeatures.receiptPlansConfig) {
+                const rpc = stFeatures.receiptPlansConfig;
+                if (rpc.free_100 && rpc.free_100.quota) RC_PLANS.free_100.defaultQuota = Number(rpc.free_100.quota);
+                if (rpc.ext_400 && rpc.ext_400.quota) RC_PLANS.ext_400.defaultQuota = Number(rpc.ext_400.quota);
+                if (rpc.receipts_800 && rpc.receipts_800.quota) RC_PLANS.receipts_800.defaultQuota = Number(rpc.receipts_800.quota);
+                if (rpc.standard_1000 && rpc.standard_1000.quota) RC_PLANS.standard_1000.defaultQuota = Number(rpc.standard_1000.quota);
+                if (rpc.enterprise_vip && rpc.enterprise_vip.quota) {
+                    RC_PLANS.enterprise_vip.defaultQuota = Number(rpc.enterprise_vip.quota);
+                    if (rpc.enterprise_vip.secondaryQuota) {
+                        RC_PLANS.enterprise_vip.defaultSecondaryQuota = Number(rpc.enterprise_vip.secondaryQuota);
+                    }
+                }
+            } else if (stFeatures.freeReceiptQuota && Number(stFeatures.freeReceiptQuota) > 0) {
+                RC_PLANS.free_100.defaultQuota = Number(stFeatures.freeReceiptQuota);
             }
 
-            if ($("freeModeQuotaInput")) $("freeModeQuotaInput").value = window.customFreeReceiptQuota;
-            if ($("rcFreePlanDescQuota")) $("rcFreePlanDescQuota").textContent = window.customFreeReceiptQuota;
-            if ($("rcFreePlanCardQuota")) $("rcFreePlanCardQuota").textContent = window.customFreeReceiptQuota + " إيصال / شهر";
-            if (typeof RC_PLANS !== "undefined" && RC_PLANS.free_100) {
-                RC_PLANS.free_100.quota = window.customFreeReceiptQuota;
-            }
-        } catch(stErr) {}
+            window.customFreeReceiptQuota = RC_PLANS.free_100.defaultQuota;
+
+            // Populate Master Quotas Inputs in the UI
+            if ($("planQuota_free_100")) $("planQuota_free_100").value = RC_PLANS.free_100.defaultQuota;
+            if ($("planQuota_ext_400")) $("planQuota_ext_400").value = RC_PLANS.ext_400.defaultQuota;
+            if ($("planQuota_receipts_800")) $("planQuota_receipts_800").value = RC_PLANS.receipts_800.defaultQuota;
+            if ($("planQuota_standard_1000")) $("planQuota_standard_1000").value = RC_PLANS.standard_1000.defaultQuota;
+            if ($("planQuota_enterprise_vip")) $("planQuota_enterprise_vip").value = RC_PLANS.enterprise_vip.defaultQuota;
+            if ($("planQuota_enterprise_vip_sec")) $("planQuota_enterprise_vip_sec").value = RC_PLANS.enterprise_vip.defaultSecondaryQuota || 500;
+        } catch(stErr) {
+            console.warn("[Receipts] Settings load error:", stErr);
+        }
+
+        renderReceiptsStats();
+        renderReceiptsTable();
+        initReceiptsEventListeners();
     } catch (err) {
         console.error("[Receipts] Failed to load receipts page:", err);
         showToast("فشل تحميل بيانات الإيصالات", "err");
@@ -9775,25 +9940,32 @@ async function loadReceiptsPage() {
 function renderReceiptsStats() {
     let total = cachedReceiptSubscribers.length;
     let freeCount = 0;
-    let extCount = 0;
-    let stdCount = 0;
-    let vipCount = 0;
+    let paidCount = 0;
+    let customCount = 0;
+    let exceededCount = 0;
 
     cachedReceiptSubscribers.forEach(s => {
         let rc = s.features?.receiptSubscription;
         let planId = rc?.planId || 'free_100';
-        if (planId === 'free_100') freeCount++;
-        else if (planId === 'ext_400') extCount++;
-        else if (planId === 'receipts_800' || planId === 'standard_1000') stdCount++;
-        else if (planId === 'enterprise_vip') vipCount++;
-        else freeCount++;
+        let limit = rc?.quotaLimit || RC_PLANS[planId]?.defaultQuota || 100;
+        let sent = rc?.monthSent || 0;
+
+        if (sent >= limit) exceededCount++;
+
+        if (planId === 'custom_quota' || rc?.isCustomQuota) {
+            customCount++;
+        } else if (planId === 'free_100') {
+            freeCount++;
+        } else {
+            paidCount++;
+        }
     });
 
     if ($("rcStatTotalSubs")) $("rcStatTotalSubs").textContent = total;
     if ($("rcStatFree")) $("rcStatFree").textContent = freeCount;
-    if ($("rcStatExt")) $("rcStatExt").textContent = extCount;
-    if ($("rcStatStandard")) $("rcStatStandard").textContent = stdCount;
-    if ($("rcStatVip")) $("rcStatVip").textContent = vipCount;
+    if ($("rcStatPaid")) $("rcStatPaid").textContent = paidCount;
+    if ($("rcStatCustom")) $("rcStatCustom").textContent = customCount;
+    if ($("rcStatExceeded")) $("rcStatExceeded").textContent = exceededCount;
 }
 
 function renderReceiptsTable() {
@@ -9802,18 +9974,37 @@ function renderReceiptsTable() {
 
     const searchTerm = ($("rcTableSearch")?.value || "").toLowerCase().trim();
     const planFilter = $("rcTablePlanFilter")?.value || "";
+    const statusFilter = $("rcTableStatusFilter")?.value || "";
 
     let filtered = cachedReceiptSubscribers.filter(s => {
         let emailMatch = s.email && s.email.toLowerCase().includes(searchTerm);
         let nameMatch = s.name && s.name.toLowerCase().includes(searchTerm);
         let rc = s.features?.receiptSubscription;
         let planId = rc?.planId || 'free_100';
-        let planMatch = !planFilter || (planId === planFilter);
-        return (emailMatch || nameMatch) && planMatch;
+        let isCustom = (planId === 'custom_quota' || rc?.isCustomQuota);
+        let limit = rc?.quotaLimit || RC_PLANS[planId]?.defaultQuota || 100;
+        let sent = rc?.monthSent || 0;
+        let isExceeded = sent >= limit;
+
+        // Plan Filter
+        let planMatch = true;
+        if (planFilter === 'free_100') planMatch = (planId === 'free_100' && !isCustom);
+        else if (planFilter === 'paid_all') planMatch = (planId !== 'free_100' && !isCustom);
+        else if (planFilter === 'custom_quota') planMatch = isCustom;
+        else if (planFilter) planMatch = (planId === planFilter);
+
+        // Status Filter
+        let statusMatch = true;
+        if (statusFilter === 'exceeded_all') statusMatch = isExceeded;
+        else if (statusFilter === 'exceeded_free') statusMatch = (isExceeded && planId === 'free_100');
+        else if (statusFilter === 'exceeded_paid') statusMatch = (isExceeded && planId !== 'free_100');
+        else if (statusFilter === 'active') statusMatch = !isExceeded;
+
+        return (emailMatch || nameMatch) && planMatch && statusMatch;
     });
 
     if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:30px; color:var(--text-dim);">لا توجد اشتراكات مطابقة للبحث</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:35px; color:var(--text-dim);">لا توجد اشتراكات إيصالات مطابقة للفلاتر المحددة</td></tr>`;
         return;
     }
 
@@ -9826,35 +10017,63 @@ function renderReceiptsTable() {
             linkedSecondaryQuota: 500
         };
 
-        let pInfo = RC_PLANS[rc.planId] || RC_PLANS.free_100;
+        let isCustom = (rc.planId === 'custom_quota' || rc.isCustomQuota);
+        let pInfo = RC_PLANS[rc.planId] || (isCustom ? RC_PLANS.custom_quota : RC_PLANS.free_100);
         let limit = rc.quotaLimit || pInfo.defaultQuota || 100;
         let sent = rc.monthSent || 0;
         let remaining = Math.max(0, limit - sent);
         let isExceeded = sent >= limit;
 
         return `
-            <tr>
+            <tr style="${isExceeded ? 'background: rgba(239, 68, 68, 0.04);' : ''}">
                 <td style="color:var(--text-faint); font-size:11px;">${idx + 1}</td>
                 <td style="font-family:monospace; font-weight:bold; color:var(--accent);">${escapeHtml(s.email)}</td>
                 <td>${escapeHtml(s.name && s.name !== '—' ? s.name : '—')}</td>
                 <td>
-                    <span style="display:inline-flex; align-items:center; gap:6px; font-size:11px; padding:3px 8px; border-radius:6px; background:${pInfo.badgeBg}; color:${pInfo.badgeColor}; font-weight:bold;">
-                        ${pInfo.icon} ${pInfo.name}
-                    </span>
+                    ${isCustom ? `
+                        <span style="display:inline-flex; align-items:center; gap:5px; font-size:11px; padding:3px 8px; border-radius:6px; background:rgba(168, 85, 247, 0.18); color:#c084fc; font-weight:bold;" title="حصة مخصصة تم تحديدها يدوياً">
+                            🎨 باقة مخصصة (${limit})
+                        </span>
+                    ` : `
+                        <span style="display:inline-flex; align-items:center; gap:5px; font-size:11px; padding:3px 8px; border-radius:6px; background:${pInfo.badgeBg}; color:${pInfo.badgeColor}; font-weight:bold;">
+                            ${pInfo.icon} ${pInfo.name}
+                        </span>
+                    `}
                 </td>
-                <td style="text-align:center; font-weight:bold; color:var(--accent);">${limit}</td>
-                <td style="text-align:center; font-weight:bold; color:#a78bfa;">${sent}</td>
-                <td style="text-align:center; font-weight:bold; color:${isExceeded ? 'var(--red)' : 'var(--green)'};">${remaining}</td>
+                <td style="text-align:center; font-weight:bold; color:var(--text); font-size:13px;">${limit}</td>
+                <td style="text-align:center; font-weight:bold; color:#a78bfa; font-size:13px;">${sent}</td>
+                <td style="text-align:center;">
+                    ${remaining === 0 ? `
+                        <span style="color:#ef4444; font-weight:bold; font-size:12px; background:rgba(239,68,68,0.1); padding:2px 8px; border-radius:6px;">0 (نفد الرصيد)</span>
+                    ` : `
+                        <span style="color:#34d399; font-weight:bold; font-size:13px;">${remaining}</span>
+                    `}
+                </td>
                 <td style="font-size:12px; color:var(--text-dim);">
-                    ${rc.linkedSecondaryEmail ? `<span style="color:#fbbf24; font-family:monospace;">🔗 ${escapeHtml(rc.linkedSecondaryEmail)}</span> (${rc.linkedSecondaryQuota || 500})` : '—'}
+                    ${(() => {
+                        let linked = Array.isArray(rc.linkedEmails) && rc.linkedEmails.length > 0 
+                            ? rc.linkedEmails 
+                            : (rc.linkedSecondaryEmail ? [{ email: rc.linkedSecondaryEmail, quota: rc.linkedSecondaryQuota || 500 }] : []);
+                        if (linked.length === 0) return '—';
+                        return linked.map(l => `
+                            <div style="margin-bottom: 3px; display: inline-flex; align-items: center; gap: 4px; background: rgba(245, 158, 11, 0.1); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.25);">
+                                <span style="color:#fbbf24; font-family:monospace; font-weight:bold;">🔗 ${escapeHtml(l.email || l)}</span>
+                                <span style="font-size: 11px; color: #fde047;">(${l.quota || 500})</span>
+                            </div>
+                        `).join('<br>');
+                    })()}
                 </td>
                 <td style="text-align:center;">
-                    ${isExceeded ? '<span style="background:var(--red-soft); color:var(--red); padding:2px 8px; border-radius:10px; font-size:11px; font-weight:bold;">⚠️ تجاوز الحد</span>' : '<span style="background:var(--green-soft); color:var(--green); padding:2px 8px; border-radius:10px; font-size:11px; font-weight:bold;">✓ نشط</span>'}
+                    ${isExceeded ? `
+                        <span style="background:rgba(239, 68, 68, 0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.35); padding:3px 10px; border-radius:12px; font-size:11px; font-weight:bold;">⚠️ تجاوز الحد</span>
+                    ` : `
+                        <span style="background:rgba(16, 185, 129, 0.15); color:#10b981; border:1px solid rgba(16,185,129,0.35); padding:3px 10px; border-radius:12px; font-size:11px; font-weight:bold;">✓ نشط</span>
+                    `}
                 </td>
                 <td style="text-align:center;">
                     <div style="display:inline-flex; gap:6px;">
-                        <button type="button" class="btn-secondary" onclick="editSubscriberReceipt('${s.email}')" style="padding:4px 8px; font-size:11px;">تعديل</button>
-                        <button type="button" class="btn-secondary" onclick="resetSubscriberReceiptMonth('${s.email}')" style="padding:4px 8px; font-size:11px;">تصفير</button>
+                        <button type="button" class="btn-primary" onclick="editSubscriberReceipt('${s.email}')" style="padding:4px 9px; font-size:11px; font-weight:bold;" title="تعديل باقة أو حصة العميل">✏️ تعديل</button>
+                        <button type="button" class="btn-secondary" onclick="resetSubscriberReceiptMonth('${s.email}')" style="padding:4px 9px; font-size:11px;" title="تصفير استهلاك الشهر الحالي">🔄 تصفير</button>
                     </div>
                 </td>
             </tr>
@@ -9862,20 +10081,205 @@ function renderReceiptsTable() {
     }).join('');
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// DYNAMIC MULTI-ACCOUNT / CASHIERS LINKING FOR VIP & CUSTOM PLANS
+// ═══════════════════════════════════════════════════════════════════
+
+function rcAddLinkedEmailRow(email = "", quota = 500) {
+    const container = $("rcLinkedEmailsRows");
+    if (!container) return;
+
+    const rowId = "rc_link_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
+    const row = document.createElement("div");
+    row.id = rowId;
+    row.className = "rc-linked-row";
+    row.style.cssText = "display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,0.2); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.2); flex-wrap: wrap;";
+
+    row.innerHTML = `
+        <div style="flex: 2; min-width: 220px;">
+            <label style="font-size: 11px; color: #fbbf24; display: block; margin-bottom: 3px; font-weight: bold;">📧 بريد الكاشير / الفرع الإضافي:</label>
+            <input type="email" class="rc-linked-email-input" value="${escapeHtml(email)}" placeholder="cashier-email@company.com" style="width: 100%; padding: 7px 10px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.35); background: var(--bg); color: var(--text); font-size: 13px; font-family: monospace;">
+        </div>
+        <div style="flex: 1; min-width: 130px;">
+            <label style="font-size: 11px; color: #fbbf24; display: block; margin-bottom: 3px; font-weight: bold;">📊 الحصة الشهرية:</label>
+            <input type="number" class="rc-linked-quota-input" value="${quota}" min="1" max="100000" style="width: 100%; padding: 7px 10px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.35); background: var(--bg); color: #fbbf24; font-size: 13px; font-weight: bold; text-align: center;">
+        </div>
+        <div style="padding-top: 18px;">
+            <button type="button" onclick="document.getElementById('${rowId}')?.remove();" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #f87171; padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold;" title="حذف هذا الإيميل">
+                🗑️ حذف
+            </button>
+        </div>
+    `;
+
+    container.appendChild(row);
+}
+
+function rcGetLinkedEmailsList() {
+    const list = [];
+    const rows = document.querySelectorAll(".rc-linked-row");
+    rows.forEach(r => {
+        const em = (r.querySelector(".rc-linked-email-input")?.value || "").toLowerCase().trim();
+        const q = parseInt(r.querySelector(".rc-linked-quota-input")?.value, 10) || 500;
+        if (em && em.includes("@")) {
+            list.push({ email: em, quota: q });
+        }
+    });
+    return list;
+}
+
+function rcPopulateLinkedEmails(linkedArr, fallbackEmail = "", fallbackQuota = 500) {
+    const container = $("rcLinkedEmailsRows");
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (Array.isArray(linkedArr) && linkedArr.length > 0) {
+        linkedArr.forEach(item => {
+            if (typeof item === "string") {
+                rcAddLinkedEmailRow(item, 500);
+            } else if (item && item.email) {
+                rcAddLinkedEmailRow(item.email, item.quota || 500);
+            }
+        });
+    } else if (fallbackEmail) {
+        rcAddLinkedEmailRow(fallbackEmail, fallbackQuota || 500);
+    } else {
+        rcAddLinkedEmailRow("", 500);
+    }
+}
+
+
 let rcListenersInitialized = false;
 function initReceiptsEventListeners() {
     if (rcListenersInitialized) return;
     rcListenersInitialized = true;
 
-    // Search and filter
+    // Search and Filters
     $("rcTableSearch")?.addEventListener("input", renderReceiptsTable);
     $("rcTablePlanFilter")?.addEventListener("change", renderReceiptsTable);
+    $("rcTableStatusFilter")?.addEventListener("change", renderReceiptsTable);
+    
     $("rcRefreshTableBtn")?.addEventListener("click", () => {
         loadReceiptsPage();
-        showToast("تم تحديث الجدول بنجاح", "ok");
+        showToast("تم تحديث السجلات بنجاح 🔄", "ok");
     });
 
-    // Plan select in form
+    // Quick Filter Badges
+    $("rcQuickAllBtn")?.addEventListener("click", () => {
+        if ($("rcTablePlanFilter")) $("rcTablePlanFilter").value = "";
+        if ($("rcTableStatusFilter")) $("rcTableStatusFilter").value = "";
+        renderReceiptsTable();
+    });
+    $("rcQuickFreeBtn")?.addEventListener("click", () => {
+        if ($("rcTablePlanFilter")) $("rcTablePlanFilter").value = "free_100";
+        if ($("rcTableStatusFilter")) $("rcTableStatusFilter").value = "";
+        renderReceiptsTable();
+    });
+    $("rcQuickPaidBtn")?.addEventListener("click", () => {
+        if ($("rcTablePlanFilter")) $("rcTablePlanFilter").value = "paid_all";
+        if ($("rcTableStatusFilter")) $("rcTableStatusFilter").value = "";
+        renderReceiptsTable();
+    });
+    $("rcQuickCustomBtn")?.addEventListener("click", () => {
+        if ($("rcTablePlanFilter")) $("rcTablePlanFilter").value = "custom_quota";
+        if ($("rcTableStatusFilter")) $("rcTableStatusFilter").value = "";
+        renderReceiptsTable();
+    });
+    $("rcQuickExceededBtn")?.addEventListener("click", () => {
+        if ($("rcTableStatusFilter")) $("rcTableStatusFilter").value = "exceeded_all";
+        renderReceiptsTable();
+    });
+
+    // Stat Cards click-to-filter
+    $("rcStatCardTotal")?.addEventListener("click", () => $("rcQuickAllBtn")?.click());
+    $("rcStatCardFree")?.addEventListener("click", () => $("rcQuickFreeBtn")?.click());
+    $("rcStatCardPaid")?.addEventListener("click", () => $("rcQuickPaidBtn")?.click());
+    $("rcStatCardCustom")?.addEventListener("click", () => $("rcQuickCustomBtn")?.click());
+    $("rcStatCardExceeded")?.addEventListener("click", () => $("rcQuickExceededBtn")?.click());
+
+    // Master Plan Quotas Save Button
+    $("saveAllPlanQuotasBtn")?.addEventListener("click", async () => {
+        const btn = $("saveAllPlanQuotasBtn");
+        btn.disabled = true;
+        btn.innerHTML = "جاري الحفظ... ⏳";
+        try {
+            const qFree = Number($("planQuota_free_100")?.value) || 100;
+            const qExt = Number($("planQuota_ext_400")?.value) || 400;
+            const qSilver = Number($("planQuota_receipts_800")?.value) || 800;
+            const qGold = Number($("planQuota_standard_1000")?.value) || 1000;
+            const qVip = Number($("planQuota_enterprise_vip")?.value) || 1500;
+            const qVipSec = Number($("planQuota_enterprise_vip_sec")?.value) || 500;
+
+            RC_PLANS.free_100.defaultQuota = qFree;
+            RC_PLANS.ext_400.defaultQuota = qExt;
+            RC_PLANS.receipts_800.defaultQuota = qSilver;
+            RC_PLANS.standard_1000.defaultQuota = qGold;
+            RC_PLANS.enterprise_vip.defaultQuota = qVip;
+            RC_PLANS.enterprise_vip.defaultSecondaryQuota = qVipSec;
+            window.customFreeReceiptQuota = qFree;
+
+            // Fetch current settings features
+            let sRows = await sbGet("/rest/v1/settings?id=eq.1&select=features");
+            let currFeatures = (sRows && sRows[0] && sRows[0].features) || {};
+            
+            currFeatures.freeReceiptQuota = qFree;
+            currFeatures.receiptPlansConfig = {
+                free_100: { quota: qFree },
+                ext_400: { quota: qExt },
+                receipts_800: { quota: qSilver },
+                standard_1000: { quota: qGold },
+                enterprise_vip: { quota: qVip, secondaryQuota: qVipSec }
+            };
+
+            // Save to Supabase
+            try {
+                await sbRpc("admin_update_global_features", {
+                    p_features: currFeatures,
+                    p_password: getAdminPassword()
+                });
+            } catch(rpcErr) {
+                await sbPatch("/rest/v1/settings?id=eq.1", { features: currFeatures });
+            }
+
+            showToast("✓ تم حفظ وتعميم حصص الباقات لجميع المشتركين بنجاح!", "ok");
+            renderReceiptsStats();
+            renderReceiptsTable();
+        } catch(e) {
+            console.error(e);
+            showToast("خطأ أثناء حفظ حصص الباقات: " + e.message, "err");
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = "<span>💾</span> حفظ وتعميم حصص الباقات في السيرفر";
+        }
+    });
+
+    // Unsubscribed Receipts Master Toggle Listener
+    $("allowUnsubReceiptsToggle")?.addEventListener("change", async () => {
+        const isAllowed = $("allowUnsubReceiptsToggle").checked;
+        const statusText = $("allowUnsubReceiptsStatusText");
+        if (statusText) {
+            statusText.textContent = isAllowed ? "مفعّل (100 إيصال)" : "مغلق (0 إيصال)";
+            statusText.style.color = isAllowed ? "var(--green)" : "var(--red)";
+        }
+        try {
+            let sRows = await sbGet("/rest/v1/settings?id=eq.1&select=features");
+            let currFeatures = (sRows && sRows[0] && sRows[0].features) || {};
+            currFeatures.allowUnsubscribedReceipts = { enabled: isAllowed };
+            try {
+                await sbRpc("admin_update_global_features", {
+                    p_features: currFeatures,
+                    p_password: getAdminPassword()
+                });
+            } catch(e) {
+                await sbPatch("/rest/v1/settings?id=eq.1", { features: currFeatures });
+            }
+            showToast(isAllowed ? "تم تفعيل منح 100 إيصال تجريبي شهرياً لغير المشتركين ✅" : "تم إيقاف الإيصالات لغير المشتركين في وضع الاشتراك 🛑");
+        } catch(e) {
+            console.error(e);
+            showToast("حدث خطأ أثناء حفظ الإعداد", "err");
+        }
+    });
+
+    // Subscriber Form: Plan Select Change
     const planSelect = $("rcSubPlanId");
     const quotaInput = $("rcSubQuota");
     const secBox = $("rcSecondaryContainer");
@@ -9883,39 +10287,50 @@ function initReceiptsEventListeners() {
 
     if (planSelect) {
         planSelect.addEventListener("change", () => {
-            let p = RC_PLANS[planSelect.value];
+            const pId = planSelect.value;
+            let p = RC_PLANS[pId];
             if (p) {
-                quotaInput.value = p.defaultQuota || 100;
-                if (p.allowSecondary) {
-                    secBox.style.display = "block";
-                    if (!secQuotaInput.value || Number(secQuotaInput.value) <= 0) {
-                        secQuotaInput.value = p.defaultSecondaryQuota || 500;
+                if (pId === 'custom_quota') {
+                    // Custom quota allows arbitrary typing, don't overwrite if user already entered a number
+                    if (!quotaInput.value || Number(quotaInput.value) <= 0) {
+                        quotaInput.value = 500;
                     }
-                } else {
                     secBox.style.display = "none";
+                    quotaInput.focus();
+                } else {
+                    quotaInput.value = p.defaultQuota || 100;
+                    if (p.allowSecondary) {
+                        secBox.style.display = "block";
+                        if (!secQuotaInput.value || Number(secQuotaInput.value) <= 0) {
+                            secQuotaInput.value = p.defaultSecondaryQuota || 500;
+                        }
+                    } else {
+                        secBox.style.display = "none";
+                    }
                 }
             }
         });
     }
 
-    // Email select updates form
+    // Subscriber Form: Email Change
     $("rcSubEmail")?.addEventListener("change", () => {
         const em = ($("rcSubEmail").value || "").toLowerCase().trim();
-        const sub = cachedReceiptSubscribers.find(s => s.email.toLowerCase() === em);
+        const sub = cachedReceiptSubscribers.find(s => s.email && s.email.toLowerCase() === em);
         if (sub) {
             let rc = sub.features?.receiptSubscription;
             if (rc) {
-                planSelect.value = rc.planId || "free_100";
-                quotaInput.value = rc.quotaLimit || RC_PLANS[rc.planId]?.defaultQuota || 100;
-                $("rcSecEmail").value = rc.linkedSecondaryEmail || "";
-                $("rcSecQuota").value = rc.linkedSecondaryQuota || 500;
-                let p = RC_PLANS[rc.planId] || RC_PLANS.free_100;
-                secBox.style.display = (p.allowSecondary || rc.linkedSecondaryEmail) ? "block" : "none";
+                let pId = rc.planId || "free_100";
+                if (rc.isCustomQuota) pId = "custom_quota";
+                planSelect.value = pId;
+                quotaInput.value = rc.quotaLimit || RC_PLANS[pId]?.defaultQuota || 100;
+                rcPopulateLinkedEmails(rc.linkedEmails, rc.linkedSecondaryEmail, rc.linkedSecondaryQuota || 500);
+                let p = RC_PLANS[pId] || RC_PLANS.free_100;
+                secBox.style.display = (p.allowSecondary || (rc.linkedEmails && rc.linkedEmails.length > 0) || rc.linkedSecondaryEmail) ? "block" : "none";
             }
         }
     });
 
-    // Save Button
+    // Save Subscriber Quota / Plan Button
     $("rcSaveSubBtn")?.addEventListener("click", async () => {
         const email = ($("rcSubEmail")?.value || "").toLowerCase().trim();
         if (!email || !email.includes("@")) {
@@ -9932,15 +10347,17 @@ function initReceiptsEventListeners() {
             return;
         }
 
-        const secEmail = ($("rcSecEmail")?.value || "").toLowerCase().trim();
-        const secQuota = parseInt($("rcSecQuota")?.value, 10) || 500;
+        const linkedEmailsList = rcGetLinkedEmailsList();
+        const secEmail = (linkedEmailsList[0]?.email || "").toLowerCase().trim();
+        const secQuota = linkedEmailsList[0]?.quota || 500;
+        const isCustom = (planId === "custom_quota" || quota !== (RC_PLANS[planId]?.defaultQuota || 100));
 
         try {
             $("rcSaveSubBtn").disabled = true;
             $("rcSaveSubBtn").innerHTML = "جاري الحفظ... ⏳";
 
             // Find or create subscriber in memory
-            let sub = cachedReceiptSubscribers.find(s => s.email.toLowerCase() === email);
+            let sub = cachedReceiptSubscribers.find(s => s.email && s.email.toLowerCase() === email);
             if (!sub) {
                 sub = {
                     email: email,
@@ -9958,21 +10375,45 @@ function initReceiptsEventListeners() {
             if (!sub.features) sub.features = {};
             sub.features.receiptSubscription = {
                 planId: planId,
-                subscriptionPlan: RC_PLANS[planId]?.name || planId,
+                isCustomQuota: isCustom,
+                subscriptionPlan: isCustom ? `باقة مخصصة (${quota} إيصال/شهر)` : (RC_PLANS[planId]?.name || planId),
                 quotaLimit: quota,
                 monthSent: sub.features.receiptSubscription?.monthSent || 0,
+                totalSent: sub.features.receiptSubscription?.totalSent || 0,
+                linkedEmails: linkedEmailsList,
                 linkedSecondaryEmail: secEmail,
                 linkedSecondaryQuota: secQuota,
                 updatedAt: new Date().toISOString()
             };
 
-            // Save to Supabase
+            // Save to Supabase subscribers table
             await apiFetch("/api/subscribers", {
                 method: "POST",
                 body: JSON.stringify(sub)
             });
 
-            showToast(`✓ تم تفعيل باقة (${RC_PLANS[planId]?.name}) للحساب ${email} بنجاح!`, "ok");
+            // Also update live counter in eta_records for instant sync
+            try {
+                let counterRow = {
+                    id: 'cnt_admin_' + email.replace(/[^a-zA-Z0-9_-]/g, '_'),
+                    vat_id: 'GLOBAL',
+                    store: 'receipt_counters',
+                    data: {
+                        email: email,
+                        planId: planId,
+                        isCustomQuota: isCustom,
+                        subscriptionPlan: sub.features.receiptSubscription.subscriptionPlan,
+                        quotaLimit: quota,
+                        monthSent: sub.features.receiptSubscription.monthSent,
+                        totalSent: sub.features.receiptSubscription.totalSent,
+                        lastSentDate: new Date().toISOString()
+                    },
+                    updated_at: new Date().toISOString()
+                };
+                await sbPatch("/rest/v1/eta_records?id=eq." + counterRow.id, counterRow).catch(() => {});
+            } catch(e) {}
+
+            showToast(`✓ تم حفظ وتفعيل الحصة (${quota} إيصال) للحساب ${email} بنجاح!`, "ok");
             renderReceiptsStats();
             renderReceiptsTable();
         } catch (err) {
@@ -9998,7 +10439,7 @@ function initReceiptsEventListeners() {
     $("rcClearFormBtn")?.addEventListener("click", () => {
         $("rcSubEmail").value = "";
         $("rcSubPlanId").value = "free_100";
-        $("rcSubQuota").value = "100";
+        $("rcSubQuota").value = RC_PLANS.free_100.defaultQuota || 100;
         $("rcSecEmail").value = "";
         $("rcSecQuota").value = "500";
         $("rcSecondaryContainer").style.display = "none";
@@ -10006,28 +10447,28 @@ function initReceiptsEventListeners() {
 }
 
 window.editSubscriberReceipt = function(email) {
-    const sub = cachedReceiptSubscribers.find(s => s.email.toLowerCase() === email.toLowerCase());
+    const sub = cachedReceiptSubscribers.find(s => s.email && s.email.toLowerCase() === email.toLowerCase());
     if (!sub) return;
 
     if ($("rcSubEmail")) $("rcSubEmail").value = sub.email;
     let rc = sub.features?.receiptSubscription;
     let pId = rc?.planId || "free_100";
+    if (rc?.isCustomQuota) pId = "custom_quota";
 
     if ($("rcSubPlanId")) $("rcSubPlanId").value = pId;
     if ($("rcSubQuota")) $("rcSubQuota").value = rc?.quotaLimit || RC_PLANS[pId]?.defaultQuota || 100;
-    if ($("rcSecEmail")) $("rcSecEmail").value = rc?.linkedSecondaryEmail || "";
-    if ($("rcSecQuota")) $("rcSecQuota").value = rc?.linkedSecondaryQuota || 500;
+    rcPopulateLinkedEmails(rc?.linkedEmails, rc?.linkedSecondaryEmail, rc?.linkedSecondaryQuota || 500);
 
     let p = RC_PLANS[pId] || RC_PLANS.free_100;
     if ($("rcSecondaryContainer")) {
-        $("rcSecondaryContainer").style.display = (p.allowSecondary || rc?.linkedSecondaryEmail) ? "block" : "none";
+        $("rcSecondaryContainer").style.display = (p.allowSecondary || (rc?.linkedEmails && rc.linkedEmails.length > 0) || rc?.linkedSecondaryEmail) ? "block" : "none";
     }
 
     document.getElementById("receiptSubForm")?.scrollIntoView({ behavior: "smooth" });
 };
 
 window.resetSubscriberReceiptMonth = async function(email) {
-    const sub = cachedReceiptSubscribers.find(s => s.email.toLowerCase() === email.toLowerCase());
+    const sub = cachedReceiptSubscribers.find(s => s.email && s.email.toLowerCase() === email.toLowerCase());
     if (!sub) return;
 
     if (confirm(`هل أنت متأكد من رغبتك في تصفير عداد استهلاك هذا الشهر للحساب: (${email})؟`)) {
@@ -10048,7 +10489,16 @@ window.resetSubscriberReceiptMonth = async function(email) {
                 body: JSON.stringify(sub)
             });
 
+            // Also reset in eta_records
+            try {
+                let recId = 'cnt_' + (sub.vat_id || 'GLOBAL') + '_' + email.replace(/[^a-zA-Z0-9_-]/g, '_');
+                await sbPatch("/rest/v1/eta_records?id=eq." + recId, {
+                    data: { monthSent: 0, lastReset: new Date().toISOString() }
+                }).catch(() => {});
+            } catch(e) {}
+
             showToast(`✓ تم تصفير عداد هذا الشهر للحساب ${email} بنجاح!`, "ok");
+            renderReceiptsStats();
             renderReceiptsTable();
         } catch (err) {
             showToast("فشل تصفير العداد: " + err.message, "err");
