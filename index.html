@@ -2998,6 +2998,38 @@ input::placeholder { color: var(--text-faint); }
 
                 </div>
 
+                <div class="stat-card green" id="stat-receipts-card">
+
+                    <div class="stat-icon">🧾</div>
+
+                    <div class="stat-info">
+
+                        <div class="stat-num" id="stat-total-receipts">0</div>
+
+                        <div class="stat-label">إجمالي الإيصالات المرسلة</div>
+
+                        <div class="stat-sub" id="stat-today-receipts-sub" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">اليوم: 0</div>
+
+                    </div>
+
+                </div>
+
+                <div class="stat-card teal" id="stat-receipt-users-card">
+
+                    <div class="stat-icon">👥</div>
+
+                    <div class="stat-info">
+
+                        <div class="stat-num" id="stat-receipt-users">0</div>
+
+                        <div class="stat-label">عملاء يستخدمون الإيصالات</div>
+
+                        <div class="stat-sub" id="stat-today-receipt-users-sub" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">نشط اليوم: 0</div>
+
+                    </div>
+
+                </div>
+
                 <div class="stat-card yellow">
 
                     <div class="stat-icon">⏸️</div>
@@ -4059,6 +4091,22 @@ input::placeholder { color: var(--text-faint); }
             
             <!-- Quick Stats Cards -->
             <div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px;">
+                <div class="stat-card green" id="rcStatCardSent" style="border: 1px solid rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.08);">
+                    <div class="stat-icon">📤</div>
+                    <div class="stat-info">
+                        <div class="stat-num" id="rcStatTotalSent" style="color: #34d399; font-weight: 800;">0</div>
+                        <div class="stat-label" style="font-weight: bold;">إجمالي الإيصالات المرسلة</div>
+                        <div class="stat-sub" id="rcStatTodaySentSub" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">اليوم: 0</div>
+                    </div>
+                </div>
+                <div class="stat-card teal" id="rcStatCardUsers" style="border: 1px solid rgba(20, 184, 166, 0.4); background: rgba(20, 184, 166, 0.08);">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <div class="stat-num" id="rcStatTotalUsers" style="color: #2dd4bf; font-weight: 800;">0</div>
+                        <div class="stat-label" style="font-weight: bold;">عملاء أرسلوا إيصالات</div>
+                        <div class="stat-sub" id="rcStatTodayUsersSub" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">نشط اليوم: 0</div>
+                    </div>
+                </div>
                 <div class="stat-card blue" id="rcStatCardTotal" style="cursor: pointer;" title="عرض كافة المشتركين">
                     <div class="stat-icon">🧾</div>
                     <div class="stat-info">
@@ -4071,20 +4119,6 @@ input::placeholder { color: var(--text-faint); }
                     <div class="stat-info">
                         <div class="stat-num" id="rcStatFree" style="color: #34d399;">0</div>
                         <div class="stat-label">الباقة المجانية (Free)</div>
-                    </div>
-                </div>
-                <div class="stat-card cyan" id="rcStatCardPaid" style="cursor: pointer;" title="عرض المشتركين في باقات مدفوعة">
-                    <div class="stat-icon">💎</div>
-                    <div class="stat-info">
-                        <div class="stat-num" id="rcStatPaid">0</div>
-                        <div class="stat-label">باقات مدفوعة</div>
-                    </div>
-                </div>
-                <div class="stat-card purple" id="rcStatCardCustom" style="cursor: pointer;" title="عرض أصحاب الباقات المخصصة">
-                    <div class="stat-icon">🎨</div>
-                    <div class="stat-info">
-                        <div class="stat-num" id="rcStatCustom" style="color: #c084fc;">0</div>
-                        <div class="stat-label">باقات مخصصة</div>
                     </div>
                 </div>
                 <div class="stat-card red" id="rcStatCardExceeded" style="cursor: pointer; border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08);" title="عرض الحسابات التي تجاوزت الحد المسموح">
@@ -5818,6 +5852,44 @@ function renderStatsFromList(list, devices) {
 }
 
 
+async function loadReceiptStats() {
+    try {
+        const stats = await sbRpc("get_receipt_stats").catch(() => null);
+        if (stats) {
+            const total = Number(stats.total_receipts || 0);
+            const today = Number(stats.today_receipts || 0);
+            const totalUsers = Number(stats.total_receipt_users || 0);
+            const todayUsers = Number(stats.today_receipt_users || 0);
+            
+            const totalEl = $("stat-total-receipts");
+            if (totalEl) totalEl.textContent = total.toLocaleString("en-US");
+            
+            const todayEl = $("stat-today-receipts-sub");
+            if (todayEl) todayEl.textContent = "اليوم: " + today.toLocaleString("en-US");
+
+            const usersEl = $("stat-receipt-users");
+            if (usersEl) usersEl.textContent = totalUsers.toLocaleString("en-US");
+
+            const todayUsersEl = $("stat-today-receipt-users-sub");
+            if (todayUsersEl) todayUsersEl.textContent = "نشط اليوم: " + todayUsers.toLocaleString("en-US");
+
+            const rcTotalEl = $("rcStatTotalSent");
+            if (rcTotalEl) rcTotalEl.textContent = total.toLocaleString("en-US");
+
+            const rcTodayEl = $("rcStatTodaySentSub");
+            if (rcTodayEl) rcTodayEl.textContent = "اليوم: " + today.toLocaleString("en-US");
+
+            const rcUsersEl = $("rcStatTotalUsers");
+            if (rcUsersEl) rcUsersEl.textContent = totalUsers.toLocaleString("en-US");
+
+            const rcTodayUsersEl = $("rcStatTodayUsersSub");
+            if (rcTodayUsersEl) rcTodayUsersEl.textContent = "نشط اليوم: " + todayUsers.toLocaleString("en-US");
+        }
+    } catch (e) {
+        console.warn("[Dashboard] loadReceiptStats error:", e);
+    }
+}
+
 async function loadStats() {
     try {
         const [list, devices, countObj] = await Promise.all([
@@ -5827,11 +5899,12 @@ async function loadStats() {
         ]);
         window.__REAL_TOTAL_DEVICES = countObj ? countObj.count : 0;
         renderStatsFromList(list, normalizeArrayResponse(devices));
+        loadReceiptStats();
     } catch (err) {
 
         console.error("[Dashboard] loadStats error:", err);
 
-        ["stat-total","stat-using-now","stat-new-week","stat-total-checks","stat-dormant","stat-avg-usage","stat-avg-new","stat-today-users","stat-total-devices","stat-new-today"].forEach(id => {
+        ["stat-total","stat-using-now","stat-new-week","stat-total-checks","stat-dormant","stat-avg-usage","stat-avg-new","stat-today-users","stat-total-devices","stat-new-today","stat-total-receipts","stat-receipt-users"].forEach(id => {
 
             const el = $(id);
 
@@ -7034,6 +7107,7 @@ const FEATURE_DEFS = [
     { k: "form41", label: "نموذج 41" },
     { k: "stmtCert", label: "كشف حساب / شهادة تعاملات" },
     { k: "myaerp", label: "MYAERP (مرسل / مستلم) وقسائم الأكواد" },
+    { k: "myaerpReceipts", label: "MYAERP للإيصالات" },
     { k: "miniErp", label: "نظام MiniERP" },
     { k: "supabaseSync", label: "مزامنة Supabase" }
 ];
@@ -9827,48 +9901,49 @@ async function loadReceiptsPage() {
         const subs = cachedSubscribers || await apiFetch("/api/subscribers");
         cachedReceiptSubscribers = Array.isArray(subs) ? [...subs] : [];
 
-        // 2. Fetch live counter records from eta_records to merge real-time consumption
+        // 2. Fetch live counter records from receipt_counters to merge real-time consumption
         try {
-            const counterRows = await sbGet("/rest/v1/eta_records?store=eq.receipt_counters&select=*");
+            loadReceiptStats();
+            const counterRows = await sbGet("/rest/v1/receipt_counters?select=email,total_sent,today_sent").catch(() => []);
             if (Array.isArray(counterRows) && counterRows.length > 0) {
                 counterRows.forEach(crow => {
-                    if (!crow || !crow.data || !crow.data.email) return;
-                    const cEmail = crow.data.email.toLowerCase().trim();
+                    if (!crow || !crow.email) return;
+                    const cEmail = crow.email.toLowerCase().trim();
                     let existing = cachedReceiptSubscribers.find(s => s.email && s.email.toLowerCase().trim() === cEmail);
                     if (existing) {
                         if (!existing.features) existing.features = {};
                         if (!existing.features.receiptSubscription) {
                             existing.features.receiptSubscription = {
-                                planId: crow.data.planId || "free_100",
-                                quotaLimit: (crow.data.quotaLimit !== undefined && crow.data.quotaLimit !== null) ? Number(crow.data.quotaLimit) : ((window.customFreeReceiptQuota !== undefined) ? Number(window.customFreeReceiptQuota) : 100),
-                                monthSent: crow.data.monthSent || 0,
-                                totalSent: crow.data.totalSent || 0
+                                planId: "free_100",
+                                quotaLimit: (window.customFreeReceiptQuota !== undefined) ? Number(window.customFreeReceiptQuota) : 100,
+                                monthSent: crow.total_sent || 0,
+                                totalSent: crow.total_sent || 0
                             };
                         } else {
                             existing.features.receiptSubscription.monthSent = Math.max(
                                 existing.features.receiptSubscription.monthSent || 0,
-                                crow.data.monthSent || 0
+                                crow.total_sent || 0
                             );
                             existing.features.receiptSubscription.totalSent = Math.max(
                                 existing.features.receiptSubscription.totalSent || 0,
-                                crow.data.totalSent || 0
+                                crow.total_sent || 0
                             );
                         }
                     } else {
                         // User used the extension but hasn't been added to subscribers table manually -> add them dynamically!
                         cachedReceiptSubscribers.push({
                             email: cEmail,
-                            name: crow.data.taxpayerName || "مستخدم إضافة",
+                            name: "مستخدم إضافة",
                             status: "active",
                             startDate: new Date().toISOString().split("T")[0],
                             endDate: "unlimited",
                             features: {
                                 receiptSubscription: {
-                                    planId: crow.data.planId || "free_100",
-                                    subscriptionPlan: crow.data.subscriptionPlan || "الباقة المجانية",
-                                    quotaLimit: (crow.data.quotaLimit !== undefined && crow.data.quotaLimit !== null) ? Number(crow.data.quotaLimit) : ((window.customFreeReceiptQuota !== undefined) ? Number(window.customFreeReceiptQuota) : 100),
-                                    monthSent: crow.data.monthSent || 0,
-                                    totalSent: crow.data.totalSent || 0
+                                    planId: "free_100",
+                                    subscriptionPlan: "الباقة المجانية",
+                                    quotaLimit: (window.customFreeReceiptQuota !== undefined) ? Number(window.customFreeReceiptQuota) : 100,
+                                    monthSent: crow.total_sent || 0,
+                                    totalSent: crow.total_sent || 0
                                 }
                             }
                         });
