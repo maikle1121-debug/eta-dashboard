@@ -4501,7 +4501,23 @@ const STORAGE_KEY     = "eta_auth_token";
 
 const ADMIN_PW_KEY    = "eta_admin_pw"; // Raw password for backend
 
-const OFFICIAL_EXTENSION_ID = "ejcokmliongdpbcglegfnfmodibdpcna";
+const OFFICIAL_EXTENSION_IDS = [
+    "kahgfnepbbakaocngehbnalpkmjjhmme", // Active extension ID from manifest key
+    "ejcokmliongdpbcglegfnfmodibdpcna"  // Fallback / alternate ID
+];
+const OFFICIAL_EXTENSION_ID = OFFICIAL_EXTENSION_IDS[0];
+
+function broadcastToExtension(message) {
+    if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage) {
+        OFFICIAL_EXTENSION_IDS.forEach(extId => {
+            try {
+                chrome.runtime.sendMessage(extId, message, () => {
+                    if (chrome.runtime.lastError) { /* ignore */ }
+                });
+            } catch(e) {}
+        });
+    }
+}
 
 let activeBackend = "supabase"; // GitHub Pages: talk directly to Supabase
 
@@ -7188,11 +7204,7 @@ async function saveGlobalFeatures() {
             body: JSON.stringify({ features: collectGlobalFeatures() })
         });
         fetch("/api/invalidate-cache", { method: "POST" }).catch(() => {});
-        if (typeof chrome !== "undefined" && chrome.runtime) {
-            chrome.runtime.sendMessage(OFFICIAL_EXTENSION_ID, { action: "forceConfigRefresh" }, () => {
-                if (chrome.runtime.lastError) { /* ignore */ }
-            });
-        }
+        broadcastToExtension({ action: "forceConfigRefresh" });
         msg.className = "success-msg";
         msg.textContent = "✅ تم حفظ الصلاحيات وتحديثها لكل الأجهزة";
         setTimeout(() => msg.classList.add("hidden"), 3500);
@@ -7538,11 +7550,7 @@ async function saveUser() {
 
         fetch("/api/invalidate-subscriptions", { method: "POST" }).catch(() => {});
 
-        if (typeof chrome !== "undefined" && chrome.runtime) {
-
-            chrome.runtime.sendMessage(OFFICIAL_EXTENSION_ID, { action: "forceConfigRefresh" }, () => { if (chrome.runtime.lastError) {} });
-
-        }
+        broadcastToExtension({ action: "forceConfigRefresh" });
 
         window.postMessage({ type: "ETA_FORCE_REFRESH" }, "*");
 
@@ -7919,24 +7927,45 @@ async function saveDualMasterModes(isExtPaid, isRcPaid) {
 
     // Background server save to Supabase
     try {
+        const adminPw = getAdminPassword();
         let sRows = await sbGet("/rest/v1/settings?id=eq.1&select=features");
         let currFeatures = (sRows && sRows[0] && sRows[0].features) || {};
         currFeatures.receiptsMode = rcMode;
         currFeatures.allowUnsubscribedReceipts = { enabled: !isRcPaid };
 
+        // 1. Update global features via RPC
         try {
             await sbRpc("admin_update_global_features", {
                 p_features: currFeatures,
-                p_password: getAdminPassword()
+                p_password: adminPw
             });
         } catch(rpcErr) {
-            await sbPatch("/rest/v1/settings?id=eq.1", { features: currFeatures });
+            console.warn("[Dashboard] admin_update_global_features RPC error:", rpcErr);
+            try { await sbPatch("/rest/v1/settings?id=eq.1", { features: currFeatures }); } catch(e) {}
         }
 
-        await sbPatch("/rest/v1/settings?id=eq.1", { 
-            mode: extMode,
-            features: currFeatures
-        });
+        // 2. Update extension mode (paid / free) via admin_update_settings RPC
+        let modeSaved = false;
+        try {
+            const mRes = await sbRpc("admin_update_settings", {
+                p_mode: extMode,
+                p_password: adminPw
+            });
+            if (mRes && mRes.ok) modeSaved = true;
+        } catch(rpcErr) {
+            console.warn("[Dashboard] admin_update_settings RPC error:", rpcErr);
+        }
+
+        if (!modeSaved) {
+            try {
+                await apiFetch("/api/settings/mode", {
+                    method: "POST",
+                    body: JSON.stringify({ mode: extMode })
+                });
+            } catch(e) {
+                try { await sbPatch("/rest/v1/settings?id=eq.1", { mode: extMode }); } catch(e2) {}
+            }
+        }
 
         // Broadcast to extension
         try {
@@ -7949,9 +7978,7 @@ async function saveDualMasterModes(isExtPaid, isRcPaid) {
                     chrome.storage.local.set({ eta_dynamic_config: cached });
                 });
             }
-            if (typeof chrome !== "undefined" && chrome.runtime) {
-                chrome.runtime.sendMessage(OFFICIAL_EXTENSION_ID, { action: "forceConfigRefresh" }, () => {});
-            }
+            broadcastToExtension({ action: "forceConfigRefresh" });
             window.postMessage({ type: "ETA_FORCE_REFRESH" }, "*");
         } catch(e) {}
 
@@ -7972,8 +7999,8 @@ async function toggleMode() {
 function initDualModesListeners() {
     $("modeToggle")?.addEventListener("change", () => {
         const isExtPaid = $("modeToggle").checked;
-        const isRcPaid  = $("receiptsModeToggle") ? $("receiptsModeToggle").checked : false;
-        saveDualMasterModes(isExtPaid, isRcPaid);
+        if ($("receiptsModeToggle")) $("receiptsModeToggle").checked = isExtPaid;
+        saveDualMasterModes(isExtPaid, isExtPaid);
     });
 
     $("receiptsModeToggle")?.addEventListener("change", () => {
@@ -8452,15 +8479,7 @@ async function pushSettings() {
 
 
 
-        if (typeof chrome !== "undefined" && chrome.runtime) {
-
-            chrome.runtime.sendMessage(OFFICIAL_EXTENSION_ID, { action: "forceConfigRefresh" }, () => {
-
-                if (chrome.runtime.lastError) { /* ignore */ }
-
-            });
-
-        }
+        broadcastToExtension({ action: "forceConfigRefresh" });
 
         window.postMessage({ type: "ETA_FORCE_REFRESH" }, "*");
 
