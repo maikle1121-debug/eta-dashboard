@@ -6028,6 +6028,73 @@ function playAlertSound() {
 
 }
 
+function playMarioWinSound() {
+    if (!soundEnabled) return;
+    try {
+        const a = new Audio("sounds/mario_win.wav");
+        a.play().catch(() => playMarioWinChiptune());
+    } catch(e) {
+        playMarioWinChiptune();
+    }
+}
+
+function playMarioWinChiptune() {
+    const ctx = ensureAudioCtx();
+    if (!ctx) return;
+    const t0 = ctx.currentTime + 0.05;
+    const notes = [
+        [330.00, 0.10, 0.00], [392.00, 0.10, 0.12], [659.25, 0.12, 0.24], [523.25, 0.12, 0.38],
+        [587.33, 0.12, 0.52], [783.99, 0.22, 0.66], [415.30, 0.08, 0.95], [523.25, 0.08, 1.05],
+        [659.25, 0.20, 1.15], [466.16, 0.08, 1.35], [587.33, 0.08, 1.45], [783.99, 0.20, 1.55],
+        [523.25, 0.08, 1.80], [659.25, 0.08, 1.90], [880.00, 0.25, 2.00], [1046.50, 0.60, 2.28]
+    ];
+    notes.forEach(([f, d, offset]) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "square";
+        osc.frequency.setValueAtTime(f, t0 + offset);
+        gain.gain.setValueAtTime(0.0001, t0 + offset);
+        gain.gain.exponentialRampToValueAtTime(0.35, t0 + offset + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + offset + d);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(t0 + offset);
+        osc.stop(t0 + offset + d + 0.02);
+    });
+}
+
+function playMarioLossSound() {
+    if (!soundEnabled) return;
+    try {
+        const a = new Audio("sounds/mario_loss.wav");
+        a.play().catch(() => playMarioLossChiptune());
+    } catch(e) {
+        playMarioLossChiptune();
+    }
+}
+
+function playMarioLossChiptune() {
+    const ctx = ensureAudioCtx();
+    if (!ctx) return;
+    const t0 = ctx.currentTime + 0.05;
+    const notes = [
+        [523.25, 0.18, 0.00], [392.00, 0.18, 0.24], [329.63, 0.25, 0.48], [440.00, 0.18, 0.80],
+        [493.88, 0.18, 1.02], [440.00, 0.18, 1.24], [415.30, 0.18, 1.48], [466.16, 0.18, 1.70],
+        [415.30, 0.18, 1.92], [392.00, 0.30, 2.18], [293.66, 0.22, 2.56], [329.63, 0.85, 2.84]
+    ];
+    notes.forEach(([f, d, offset]) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "square";
+        osc.frequency.setValueAtTime(f, t0 + offset);
+        gain.gain.setValueAtTime(0.0001, t0 + offset);
+        gain.gain.exponentialRampToValueAtTime(0.35, t0 + offset + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + offset + d);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(t0 + offset);
+        osc.stop(t0 + offset + d + 0.02);
+    });
+}
+
 function getDayKey(d) {
 
     return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
@@ -6137,7 +6204,81 @@ async function detectNewCustomers() {
 
 }
 
+async function sendPushToMobile(title, body, data = {}) {
+    try {
+        await fetch(`${SUPABASE_URL}/functions/v1/send-push`, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': 'Bearer ' + SUPABASE_KEY,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ title, body, data })
+        });
+    } catch(e) {
+        console.warn('[Push] Error sending push to mobile:', e);
+    }
+}
 
+// ═══════════════════════════════════════════════════════════════════
+// RECEIPT REALTIME EVENTS DETECTOR (عميل جديد للإيصالات + تجاوز الباقة)
+// ═══════════════════════════════════════════════════════════════════
+
+let lastProcessedReceiptEventId = null;
+let receiptEventsBaselineReady = false;
+
+async function detectReceiptEvents() {
+    try {
+        const rows = await sbGet("/rest/v1/eta_records?store=eq.receipt_events&order=updated_at.desc&limit=10");
+        if (!Array.isArray(rows) || rows.length === 0) return;
+
+        if (!receiptEventsBaselineReady) {
+            receiptEventsBaselineReady = true;
+            lastProcessedReceiptEventId = rows[0].id;
+            return;
+        }
+
+        const newEvents = [];
+        for (const r of rows) {
+            if (r.id === lastProcessedReceiptEventId) break;
+            newEvents.push(r);
+        }
+
+        if (newEvents.length > 0) {
+            lastProcessedReceiptEventId = rows[0].id;
+            newEvents.reverse().forEach(ev => handleReceiptEvent(ev.data));
+        }
+    } catch(err) {
+        // ignore errors
+    }
+}
+
+function handleReceiptEvent(data) {
+    if (!data) return;
+    const type = data.type || data.event;
+    const email = data.email || "عميل غير معروف";
+
+    if (type === "new_receipt_client") {
+        playMarioWinSound();
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        showToast("🎉 عميل جديد فتح صفحة الإيصالات لأول مرة: " + email, "ok");
+        sendPushToMobile(
+            "🎉 عميل جديد في منظومة الإيصالات!",
+            "العميل (" + email + ") بدأ استخدام الإيصالات لأول مرة الآن",
+            { event: "new_receipt_client", sound: "mario_win", email: email }
+        );
+    } else if (type === "receipt_quota_exceeded") {
+        playMarioLossSound();
+        if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
+        const limit = data.quotaLimit || 100;
+        showToast("⚠️ العميل (" + email + ") استهلك كامل باقته (" + limit + " إيصال)!", "err");
+        sendPushToMobile(
+            "⚠️ تم استهلاك باقة الإيصالات بالكامل!",
+            "العميل " + email + " وصل للحد الأقصى (" + limit + " إيصال)",
+            { event: "receipt_quota_exceeded", sound: "mario_loss", email: email }
+        );
+    }
+}
 
 // ─── USERS PAGE ──────────────────────────────────────────────
 
@@ -9741,6 +9882,10 @@ document.addEventListener("DOMContentLoaded", () => {
     setInterval(detectNewCustomers, ALERT_POLL_MS);
 
     setTimeout(detectNewCustomers, 5000);
+
+    setInterval(detectReceiptEvents, 10000);
+
+    setTimeout(detectReceiptEvents, 3000);
 
     document.addEventListener("visibilitychange", () => {
 
