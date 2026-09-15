@@ -6229,24 +6229,20 @@ let receiptEventsBaselineReady = false;
 
 async function detectReceiptEvents() {
     try {
-        const rows = await sbGet("/rest/v1/eta_records?store=eq.receipt_events&order=updated_at.desc&limit=10");
+        const rows = await sbGet("/rest/v1/settings?id=eq.1&select=features");
         if (!Array.isArray(rows) || rows.length === 0) return;
+        const ev = rows[0]?.features?.latestReceiptEvent;
+        if (!ev || !ev.id) return;
 
         if (!receiptEventsBaselineReady) {
             receiptEventsBaselineReady = true;
-            lastProcessedReceiptEventId = rows[0].id;
+            lastProcessedReceiptEventId = ev.id;
             return;
         }
 
-        const newEvents = [];
-        for (const r of rows) {
-            if (r.id === lastProcessedReceiptEventId) break;
-            newEvents.push(r);
-        }
-
-        if (newEvents.length > 0) {
-            lastProcessedReceiptEventId = rows[0].id;
-            newEvents.reverse().forEach(ev => handleReceiptEvent(ev.data));
+        if (ev.id !== lastProcessedReceiptEventId) {
+            lastProcessedReceiptEventId = ev.id;
+            handleReceiptEvent(ev);
         }
     } catch(err) {
         // ignore errors
