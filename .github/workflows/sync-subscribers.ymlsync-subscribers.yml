@@ -1,6 +1,6 @@
 # sync_subscribers.json — تجديد حائط الصد تلقائياً
 # (بديل أول لـ Edge Function — بلا أي CLI، بلا أسرار مكتوبة)
-# المكان: /eta-dashboard/.github/workflows/sync-subscribers.yml
+# المكان: /eta-dashboard/.github/workflows/sync-subscribers.yml.github/workflows/sync-subscribers.ymlر
 # يشتغل كل 5 دقائق + زر "تشغيل يدوي" من تبويب Actions.
 name: Sync Subscribers JSON
 
