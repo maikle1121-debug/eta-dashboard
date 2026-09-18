@@ -1,0 +1,42 @@
+{
+  "v": 1,
+  "updated": "2026-09-18T00:00:00.000Z",
+  "mode": "paid",
+  "maintenance": false,
+  "features": {
+    "myaerpReceipts": true,
+    "pdfExport": true,
+    "excelExport": true,
+    "t4Report": true
+  },
+  "notice_message": "",
+  "version": "2.5.0",
+  "version_notes": "",
+  "blocked_emails": [],
+  "cache_duration_minutes": 30,
+  "is_batching_enabled": true,
+  "batching_max_items": 50,
+  "batching_interval_minutes": 60,
+  "sharding_mode": false,
+  "shard_prefix_length": 1,
+  "shard_base_url": "",
+  "kill_switch_supabase_reads": false,
+  "kill_switch_all_network": false,
+  "restrict_10mb": {
+    "enabled": true,
+    "daily_budget_bytes": 10485760
+  },
+  "omit_free_from_file": true,
+  "treat_missing_as": "free",
+  "github": {
+    "subscribers_file": "subscribers.json",
+    "repo": "maikle1121-debug/eta-dashboard",
+    "branch": "main",
+    "raw_base_url": "https://raw.githubusercontent.com/maikle1121-debug/eta-dashboard/main"
+  },
+  "dashboard_features": {
+    "supabaseSync": false,
+    "firebaseRealtime": false,
+    "githubReads": true
+  }
+}
