@@ -5870,7 +5870,20 @@ function renderStatsFromList(list, devices) {
 
 async function loadReceiptStats() {
     try {
-        const stats = await sbRpc("get_receipt_stats").catch(() => null);
+        let stats = await sbRpc("get_receipt_stats").catch(() => null);
+        if (!stats) {
+            try {
+                const counters = await sbGet("/rest/v1/receipt_counters?select=email,total_sent,today_sent,today_date&order=last_sent.desc&limit=10000").catch(() => []);
+                const todayD = new Date().toISOString().split("T")[0];
+                let total = 0, today = 0, users = 0, todayUsers = 0;
+                (Array.isArray(counters) ? counters : []).forEach(function (c) {
+                    const t = Number(c.total_sent || 0); total += t; if (t > 0) users++;
+                    const d = (c.today_date && String(c.today_date).substring(0, 10) === todayD) ? Number(c.today_sent || 0) : 0;
+                    today += d; if (d > 0) todayUsers++;
+                });
+                stats = { total_receipts: total, today_receipts: today, total_receipt_users: users, today_receipt_users: todayUsers };
+            } catch (e) {}
+        }
         if (stats) {
             const total = Number(stats.total_receipts || 0);
             const today = Number(stats.today_receipts || 0);
@@ -6287,6 +6300,12 @@ const USERS_PER_PAGE = 15;
 function getFilteredUsers(list, filterText = "", statusFilter = "") {
 
     let result = list;
+
+    result = result.filter(u => {
+        const f = u && u.features;
+        const rc = f && f.receiptSubscription;
+        return !!(rc && rc.planId && rc.planId !== "none");
+    });
 
     if (filterText) {
 
