@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a73e8;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#6c5ce7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a855f7;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="docGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e8edf5;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#00000033"/>
+    </filter>
+  </defs>
+
+  <rect x="16" y="16" width="480" height="480" rx="96" ry="96" fill="url(#bgGrad)" filter="url(#shadow)"/>
+
+  <circle cx="420" cy="80" r="60" fill="#ffffff15"/>
+  <circle cx="60" cy="420" r="80" fill="#ffffff10"/>
+
+  <g transform="translate(108, 72)">
+    <rect x="0" y="0" width="200" height="280" rx="12" ry="12" fill="url(#docGrad)" filter="url(#shadow)"/>
+    <path d="M160,0 L200,40 L160,40 Z" fill="#c8d6e5" opacity="0.5"/>
+    <rect x="20" y="24" width="120" height="10" rx="5" fill="#1a73e8" opacity="0.8"/>
+    <rect x="20" y="52" width="160" height="6" rx="3" fill="#dfe6ed"/>
+    <rect x="20" y="68" width="140" height="6" rx="3" fill="#dfe6ed"/>
+    <rect x="20" y="84" width="160" height="6" rx="3" fill="#dfe6ed"/>
+    <rect x="20" y="100" width="100" height="6" rx="3" fill="#dfe6ed"/>
+    <line x1="20" y1="120" x2="180" y2="120" stroke="#1a73e8" stroke-width="1.5" opacity="0.3"/>
+    <rect x="20" y="132" width="70" height="28" rx="6" fill="#1a73e8" opacity="0.1"/>
+    <rect x="100" y="132" width="80" height="28" rx="6" fill="#6c5ce7" opacity="0.15"/>
+    <rect x="20" y="176" width="160" height="8" rx="4" fill="#6c5ce7" opacity="0.6"/>
+    <rect x="20" y="192" width="120" height="6" rx="3" fill="#a855f7" opacity="0.4"/>
+    <circle cx="140" cy="240" r="24" fill="#22c55e" filter="url(#glow)"/>
+    <polyline points="128,240 136,248 152,232" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <g transform="translate(280, 280)">
+    <circle cx="64" cy="64" r="56" fill="#ffffff" filter="url(#shadow)"/>
+    <circle cx="64" cy="64" r="52" fill="url(#bgGrad)"/>
+    <text x="64" y="80" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="bold" fill="white" text-anchor="middle" filter="url(#glow)">%</text>
+  </g>
+
+  <g transform="translate(340, 100)">
+    <rect x="0" y="0" width="100" height="40" rx="20" fill="#ffffff" filter="url(#shadow)"/>
+    <text x="50" y="28" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="bold" fill="#1a73e8" text-anchor="middle">MYA</text>
+  </g>
+
+  <text x="256" y="280" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="bold" fill="#ffffff" fill-opacity="0.15" text-anchor="middle" transform="rotate(-30, 256, 280)" letter-spacing="12">MYA</text>
+  <text x="430" y="470" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="bold" fill="#ffffff" fill-opacity="0.4" text-anchor="middle">MYA</text>
+</svg>
