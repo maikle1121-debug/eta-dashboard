@@ -2212,12 +2212,17 @@ const VERCEL_DB_KEY = "sb_publishable_xQcMrCMwwggfAKggkxfYxQ_Ty0DbgRK";
 // MUST stay in the SAME order as DB_CHAIN in the extension (sw.js /
 // scripts/VercelConfig.js) so features.forced_db_index means the same database
 // on both sides: 0=cnsf, 1=wbyn, 2=mya-alpha, 3=qtjg, 4=initnew.
+// v2.4.40: the SAME 5 Supabase projects, in the SAME order, as the extension's DB_CHAIN
+// (sw.js / scripts/VercelConfig.js). The old list held mya-alpha + initnew (Vercel, now
+// paused) and was missing rtxo + arhp, so the dashboard could not see — or write to —
+// the database the customers were actually on, and forced_db_index pointed at a
+// different database on each side.
 const DB_CHAIN = [
-  { url: TERTIARY_DB_URL, key: TERTIARY_DB_KEY },
-  { url: QUATERNARY_DB_URL, key: QUATERNARY_DB_KEY },
-  { url: PRIMARY_OLD_DB_URL, key: PRIMARY_DB_KEY },
-  { url: SECONDARY_DB_URL, key: VERCEL_DB_KEY },
-  { url: VERCEL_NEW_DB_URL, key: VERCEL_DB_KEY }
+  { url: "https://cnsfkiezalkbfzvjmduw.supabase.co", key: "sb_publishable_RiZwOj_jvTRhs2Hr0xbltA_g5vmrc9I" },
+  { url: "https://wbynlzywfxmlauibzqcx.supabase.co", key: "sb_publishable_SQKeHvMaWG7GanCDZdBhiw_4rE-hlpk" },
+  { url: "https://rtxoydjdulwpirlehtxg.supabase.co", key: "sb_publishable_ZRQIQJRT6t6DfmE1q-OFjg_iU3oNLmD" },
+  { url: "https://arhpjzmiknlbaqvdavkg.supabase.co", key: "sb_publishable_gdRLNNE0Yc8C-6pZ3tYrAg_ChL9OcsQ" },
+  { url: "https://qtjgrzqyzdjnkzjhlnaa.supabase.co", key: "sb_publishable_xQcMrCMwwggfAKggkxfYxQ_Ty0DbgRK" }
 ];
 
 let _activeDbIndex = 0;
@@ -2876,7 +2881,7 @@ function markDbHealthy(i) {
    Draws / refreshes the persistent bottom bar that shows which DB (1/2/3)
    the app is currently served by. Always visible. */
 function dbLabelFor(i) {
-  return i === 0 ? "أساسي (Supabase الرئيسي) ⚡" : i === 1 ? "فرعي 1 (Supabase احتياطي)" : i === 2 ? "فرعي 2 (Vercel احتياطي)" : i === 3 ? "احتياطي (Supabase DB1)" : "خامس (سيرفر Vercel الجديد) 🚀";
+  return ["قاعدة 1 (cnsf) ⚡", "قاعدة 2 (wbyn)", "قاعدة 3 (rtxo)", "قاعدة 4 (arhp)", "قاعدة 5 (qtjg)"][i] || ("قاعدة " + (i + 1));
 }
 function renderDbStatusBar() {
   const bar = $("dbStatusBar");
