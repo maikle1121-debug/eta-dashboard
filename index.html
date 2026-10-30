@@ -14,26 +14,8 @@
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <script src="lib/chart.umd.js"></script>
 <style>
-@font-face {
-  font-family: 'Cairo';
-  src: url('fonts/Cairo-Regular.ttf') format('truetype');
-  font-weight: 400;
-}
-@font-face {
-  font-family: 'Cairo';
-  src: url('fonts/Cairo-Bold.ttf') format('truetype');
-  font-weight: 700;
-}
-@font-face {
-  font-family: 'Cairo';
-  src: url('fonts/Cairo-Bold.ttf') format('truetype');
-  font-weight: 800;
-}
-@font-face {
-  font-family: 'Cairo';
-  src: url('fonts/Cairo-Bold.ttf') format('truetype');
-  font-weight: 900;
-}
+/* Cairo from Google Fonts: the bundled fonts/Cairo-*.ttf files are corrupted (CRLF-converted) */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 :root {
   --bg-deep:#f4f6fb; --bg-base:#ffffff; --glass:#ffffff;
