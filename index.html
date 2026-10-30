@@ -2198,11 +2198,11 @@ function isPaidSubscriber(u) {
    ═════════════════════════════════════════════════════════════════════════ */
 const VERCEL_NEW_DB_URL = "https://initnewdatabasecomplete.vercel.app";
 const TERTIARY_DB_URL = "https://cnsfkiezalkbfzvjmduw.supabase.co";
-const PRIMARY_DB_URL = TERTIARY_DB_URL;
+const PRIMARY_DB_URL = "https://rtxoydjdulwpirlehtxg.supabase.co"; // was cnsfk (quota-locked)
 const PRIMARY_OLD_DB_URL = "https://mya-alpha.vercel.app";
 const SECONDARY_DB_URL = "https://qtjgrzqyzdjnkzjhlnaa.supabase.co";
 const QUATERNARY_DB_URL = "https://wbynlzywfxmlauibzqcx.supabase.co";
-const PRIMARY_DB_KEY = "sb_publishable_RiZwOj_jvTRhs2Hr0xbltA_g5vmrc9I";
+const PRIMARY_DB_KEY = "sb_publishable_ZRQIQJRT6t6DfmE1q-OFjg_iU3oNLmD";
 const TERTIARY_DB_KEY = "sb_publishable_RiZwOj_jvTRhs2Hr0xbltA_g5vmrc9I";
 const QUATERNARY_DB_KEY = "sb_publishable_SQKeHvMaWG7GanCDZdBhiw_4rE-hlpk";
 const VERCEL_DB_KEY = "sb_publishable_xQcMrCMwwggfAKggkxfYxQ_Ty0DbgRK";
@@ -2218,11 +2218,12 @@ const VERCEL_DB_KEY = "sb_publishable_xQcMrCMwwggfAKggkxfYxQ_Ty0DbgRK";
 // the database the customers were actually on, and forced_db_index pointed at a
 // different database on each side.
 const DB_CHAIN = [
-  { url: "https://cnsfkiezalkbfzvjmduw.supabase.co", key: "sb_publishable_RiZwOj_jvTRhs2Hr0xbltA_g5vmrc9I" },
-  { url: "https://wbynlzywfxmlauibzqcx.supabase.co", key: "sb_publishable_SQKeHvMaWG7GanCDZdBhiw_4rE-hlpk" },
   { url: "https://rtxoydjdulwpirlehtxg.supabase.co", key: "sb_publishable_ZRQIQJRT6t6DfmE1q-OFjg_iU3oNLmD" },
   { url: "https://arhpjzmiknlbaqvdavkg.supabase.co", key: "sb_publishable_gdRLNNE0Yc8C-6pZ3tYrAg_ChL9OcsQ" },
-  { url: "https://qtjgrzqyzdjnkzjhlnaa.supabase.co", key: "sb_publishable_xQcMrCMwwggfAKggkxfYxQ_Ty0DbgRK" }
+  { url: "https://qtjgrzqyzdjnkzjhlnaa.supabase.co", key: "sb_publishable_xQcMrCMwwggfAKggkxfYxQ_Ty0DbgRK" },
+  // quota-locked (exceed_egress_quota) until their next billing cycle: last resort only
+  { url: "https://cnsfkiezalkbfzvjmduw.supabase.co", key: "sb_publishable_RiZwOj_jvTRhs2Hr0xbltA_g5vmrc9I" },
+  { url: "https://wbynlzywfxmlauibzqcx.supabase.co", key: "sb_publishable_SQKeHvMaWG7GanCDZdBhiw_4rE-hlpk" }
 ];
 
 let _activeDbIndex = 0;
@@ -2239,7 +2240,7 @@ function dbCooldownMs(i) { return _dbQuotaLock[i] ? QUOTA_COOLDOWN_MS : FAILOVER
 
 // Survives app restarts: without this every cold start re-probes a dead primary
 // and pays the full 8s + 3.5s + 3.5s timeout ladder again.
-const DB_STATE_KEY = "eta_db_state_v1";
+const DB_STATE_KEY = "eta_db_state_v2"; // v2: DB_CHAIN was reordered, v1 indexes point at different databases
 function dbStateLoad() {
   try {
     const raw = localStorage.getItem(DB_STATE_KEY);
@@ -2681,7 +2682,7 @@ function wireDatabasesPage() {
 /* ════════════════════ MANUAL DATABASE SWITCHER & AUTO-FAILOVER SAFETY ════════════════════ */
 let _manualDbIndex = null;
 try {
-  const m = localStorage.getItem("eta_manual_db_index");
+  const m = localStorage.getItem("eta_manual_db_index_v2");
   if (m !== null && m !== "" && m !== "auto") {
     const parsed = parseInt(m, 10);
     if (!isNaN(parsed) && parsed >= 0 && parsed < DB_CHAIN.length) {
@@ -2746,11 +2747,11 @@ function setManualDbIndex(choice) {
   if (choice === null || choice === undefined || choice === -1 || choice === "auto") {
     _manualDbIndex = null;
     _activeDbIndex = 0;
-    localStorage.removeItem("eta_manual_db_index");
+    localStorage.removeItem("eta_manual_db_index_v2");
     showToast("تم تفعيل وضع التبديل التلقائي الذكي ⚡ ومزامنة الإضافة", "ok");
   } else {
     _manualDbIndex = Number(choice);
-    localStorage.setItem("eta_manual_db_index", String(_manualDbIndex));
+    localStorage.setItem("eta_manual_db_index_v2", String(_manualDbIndex));
     _activeDbIndex = _manualDbIndex;
     _dbFailAt[_manualDbIndex] = 0;
     _dbQuotaLock[_manualDbIndex] = false;
@@ -3334,7 +3335,7 @@ async function sbGetCounted(path) {
        broadcast to every node).
    Quota-locked / cooling nodes are skipped and results are cached briefly, so
    unifying the view never turns the 15s pulse into an egress storm. */
-const AGG_TTL_MS = 25000;
+const AGG_TTL_MS = 120000; // was 25s; the pulse clears this cache the moment data_version changes
 const _aggCache = {};
 function aggDbReachable(i) {
   return i >= 0 && i < DB_CHAIN.length && (Date.now() - _dbFailAt[i]) >= dbCooldownMs(i);
@@ -4576,6 +4577,29 @@ async function checkAuth() {
   }
 }
 
+async function adminLoginAnyDb(pw) {
+  let last = null;
+  for (let i = 0; i < DB_CHAIN.length; i++) {
+    const db = DB_CHAIN[i];
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 6000);
+    try {
+      const res = await fetch(db.url.replace(/\/+$/, "") + "/rest/v1/rpc/admin_login", {
+        method: "POST",
+        headers: headersForDb(db, { "Content-Type": "application/json" }),
+        body: JSON.stringify({ p_password: pw }),
+        signal: ctrl.signal
+      });
+      if (!res.ok) continue; // quota-locked / down: try the next database
+      const d = await res.json().catch(() => null);
+      if (d && d.ok) return d;
+      if (d) last = d;
+    } catch (e) { /* timeout or network: try the next database */ }
+    finally { clearTimeout(t); }
+  }
+  return last || { ok: false, error: "تعذر الاتصال بقواعد البيانات - تحقق من الإنترنت" };
+}
+
 async function doLogin() {
   const pw = $("loginPassword").value.trim();
   if (!pw) { $("loginError").textContent = "أدخل كلمة المرور"; $("loginError").classList.remove("hidden"); return; }
@@ -4583,7 +4607,7 @@ async function doLogin() {
   $("loginBtn").disabled = true;
   $("loginBtn").textContent = "⏳ جاري التحقق...";
   try {
-    const data = await sbRpc("admin_login", { p_password: pw });
+    const data = await adminLoginAnyDb(pw);
     if (!data || !data.ok) throw new Error(
       ((data && data.error) || "كلمة المرور خاطئة") +
       (data && data.dbPassSet === false ? " [لا توجد كلمة مرور مسجلة في القاعدة]" : "")
@@ -5284,10 +5308,10 @@ function confirmAction(title, message, cb, okText, danger) {
 }
 
 /* ════════════════════ DEVICES ════════════════════ */
-async function loadDevices() {
+async function loadDevices(fromPulse) {
   try {
     const activeIdx = getActiveDbIndex();
-    if (activeIdx !== 0) {
+    if (activeIdx !== 0 && !fromPulse) {
       try {
         const primHeaders = headersForDb(DB_CHAIN[0], {});
         const primPulse = await fetch(DB_CHAIN[0].url + "/rest/v1/rpc/live_dashboard_pulse", {
@@ -5325,7 +5349,7 @@ async function loadDevices() {
       } catch (e) {}
     }
 
-    const [devices, subs, settings] = await Promise.all([getDevices(true), getSubscribers(), getSettings()]);
+    const [devices, subs, settings] = await Promise.all([getDevices(!fromPulse), getSubscribers(), getSettings()]);
     const blocked = new Set((settings.blockedEmails || []).map(e => String(e).toLowerCase().trim()));
     const subMap = {};
     subs.forEach(s => {
@@ -6088,9 +6112,9 @@ function renderIpsList() {
 }
 
 /* ════════════════════ TODAY USERS ════════════════════ */
-async function loadTodayDevices() {
+async function loadTodayDevices(fromPulse) {
   const container = $("todayDevicesList");
-  container.innerHTML = '<div class="spinner">جاري التحميل...</div>';
+  if (!fromPulse) container.innerHTML = '<div class="spinner">جاري التحميل...</div>';
   try {
     const [devices, subs] = await Promise.all([getDevices(), getSubscribers()]);
     const subMap = {};
@@ -7447,10 +7471,11 @@ async function runDashboardPulse() {
       $("diagNewTxt").textContent = pulse.new_devices.length;
     }
 
-    // Live update open pages that display online status
+    // Live update open pages that display online status (re-render from cache; fresh rows
+    // are fetched only when data_version changes — see step 4 below)
     if (currentPage === "users") renderUsersRows();
-    if (currentPage === "devices") loadDevices();
-    if (currentPage === "today") loadTodayDevices();
+    if (currentPage === "devices") loadDevices(true);
+    if (currentPage === "today") loadTodayDevices(true);
 
     // 2. Instant New Customers Detection (<4s reaction time)
     const newDevs = Array.isArray(pulse.new_devices) ? pulse.new_devices : [];
@@ -7611,7 +7636,7 @@ async function loadReceiptStats() {
         try {
             // Merged across every reachable node (one row per email, max of each
             // counter), so the totals are the union and never double-count.
-            const counters = await aggRows("/rest/v1/receipt_counters?select=email,total_sent,today_sent,today_date&order=last_sent.desc&limit=" + RECEIPT_COUNTERS_LIMIT, { ttl: 20000 });
+            const counters = await aggRows("/rest/v1/receipt_counters?select=email,total_sent,today_sent,today_date&order=last_sent.desc&limit=" + RECEIPT_COUNTERS_LIMIT, { ttl: 300000 });
             const mergedCounters = aggMergeByEmail([counters]);
             const todayD = new Date().toISOString().split("T")[0];
             let total = 0, today = 0, users = 0, todayUsers = 0;
@@ -8523,8 +8548,8 @@ document.addEventListener("DOMContentLoaded", () => {
     runDashboardPulse();
     checkAutoBackupScheduler();
     if (currentPage === "users") renderUsersRows();
-    if (currentPage === "devices") loadDevices();
-    if (currentPage === "today") loadTodayDevices();
+    if (currentPage === "devices") loadDevices(true);
+    if (currentPage === "today") loadTodayDevices(true);
     if (currentPage === "receipts") renderReceiptsTable();
   });
 
