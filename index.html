@@ -3083,6 +3083,31 @@ const SB_HEADERS = {
 };
 const STORAGE_KEY = "eta_auth_token";
 const ADMIN_PW_KEY = "eta_admin_pw";
+// v2026-10-31: send the admin password to our own Supabase databases (over HTTPS) so the
+// coming "own rows only" security rules keep this dashboard at full access. Nothing reads it yet.
+(function () {
+  try {
+    if (window.__myaAdminFetch) return;
+    window.__myaAdminFetch = true;
+    const _origFetch = window.fetch.bind(window);
+    window.fetch = function (input, init) {
+      try {
+        const url = typeof input === "string" ? input : ((input && input.url) || "");
+        if (/^https:\/\/[a-z0-9]{20}\.supabase\.co\//.test(url)) {
+          const pw = localStorage.getItem(ADMIN_PW_KEY) || "";
+          if (pw) {
+            init = Object.assign({}, init || {});
+            const h = new Headers(init.headers || (typeof input !== "string" && input.headers) || {});
+            if (!h.has("x-admin-password")) h.set("x-admin-password", pw);
+            init.headers = h;
+          }
+        }
+      } catch (e) { /* never block a request */ }
+      return _origFetch(input, init);
+    };
+  } catch (e) {}
+})();
+
 const LOG_STORAGE_KEY = "eta_activity_logs";
 const ALERT_KEY = "eta_newAlerted_v1";
 const FP_ENABLED_KEY = "eta_fp_enabled";
