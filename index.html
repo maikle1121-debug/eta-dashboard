@@ -3610,6 +3610,48 @@ async function syncFeaturesToAllDbs(featuresPatch) {
   await Promise.allSettled(promises);
 }
 
+/* ═══ Auto-resync of databases that come back (e.g. after a quota lock) ═══
+   Every 6 h (and right after login) compare each node's settings with the primary and push
+   mode / notice / version / blocked list / features to any node that differs. A locked or
+   down node simply fails the read and is retried on the next round. ~5 tiny GETs per round. */
+const NODE_SYNC_KEY = "mya_node_sync_at";
+function _stableStr(v) {
+  if (v === null || typeof v !== "object") return JSON.stringify(v);
+  if (Array.isArray(v)) return "[" + v.map(_stableStr).join(",") + "]";
+  return "{" + Object.keys(v).sort().map(k => JSON.stringify(k) + ":" + _stableStr(v[k])).join(",") + "}";
+}
+async function autoResyncNodes(force) {
+  try {
+    if (!getAdminPassword()) return;
+    const last = Number(localStorage.getItem(NODE_SYNC_KEY) || 0);
+    if (!force && Date.now() - last < 6 * 3600 * 1000) return;
+    localStorage.setItem(NODE_SYNC_KEY, String(Date.now()));
+    const sel = "/rest/v1/settings?id=eq.1&select=mode,maintenance_mode,notice_message,version,version_notes,blocked_emails,features";
+    const rows = await Promise.all(DB_CHAIN.map(async (db) => {
+      const c = new AbortController();
+      const t = setTimeout(() => c.abort(), 6000);
+      try {
+        const r = await fetch(db.url.replace(/\/+$/, "") + sel, { headers: headersForDb(db, {}), signal: c.signal });
+        if (!r.ok) return null;
+        const j = await r.json();
+        return (j && j[0]) || null;
+      } catch (e) { return null; } finally { clearTimeout(t); }
+    }));
+    const ref = rows[0] || rows.find(Boolean);
+    if (!ref) return;
+    const sig = (o) => _stableStr([o.mode, !!o.maintenance_mode, o.notice_message || "", o.version || "", o.version_notes || "", o.blocked_emails || [], safeParseJson(o.features, {})]);
+    const want = sig(ref);
+    const lagging = rows.map((r, i) => (r && sig(r) !== want) ? i : -1).filter(i => i >= 0);
+    if (!lagging.length) return;
+    await syncSettingsToAllDbs({
+      mode: ref.mode, maintenance_mode: ref.maintenance_mode, notice_message: ref.notice_message,
+      version: ref.version, version_notes: ref.version_notes, blocked_emails: ref.blocked_emails
+    });
+    await syncFeaturesToAllDbs(safeParseJson(ref.features, {}));
+    console.log("[node-sync] primary settings pushed to lagging databases:", lagging.map(i => DB_CHAIN[i].url));
+  } catch (e) { /* best effort; next round retries */ }
+}
+
 async function syncSettingsToAllDbs(settingsPatch) {
   if (!settingsPatch || typeof settingsPatch !== "object") return;
   const adminPw = getAdminPassword() || "123456";
@@ -4599,6 +4641,7 @@ async function doLogin() {
     localStorage.setItem(STORAGE_KEY, pw);
     if ($("fpEnableCheck").checked) setFpEnabled(true);
     addLogEntry("login", "تم تسجيل الدخول إلى لوحة التحكم");
+    setTimeout(() => autoResyncNodes(true), 4000);
     $("loginPassword").value = "";
     showDashboard();
   } catch (err) {
@@ -7546,6 +7589,7 @@ async function runDashboardPulse() {
     //    node (cached), so these tiles no longer depend on which node answered
     //    the pulse and stay identical across failovers.
     loadReceiptStats().catch(function () {});
+    autoResyncNodes(); // throttled to once per 6 h; heals databases that came back from a lock
   } catch(e) {
     console.warn("[Pulse] Warning:", e);
   } finally {
